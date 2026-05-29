@@ -1,5 +1,7 @@
 # Azure ML End-to-End Pipeline
 
+End-to-end ML pipeline on Azure Machine Learning for heart disease prediction. Features 4-step automated workflow (data prep, training, evaluation, registration), MLflow experiment tracking, and managed endpoint deployment. Built with Azure ML SDK v2, scikit-learn, and auto-scaling compute clusters.
+
 A complete MLOps pipeline on Azure Machine Learning that takes raw data through to a live prediction API.
 
 ## Architecture
