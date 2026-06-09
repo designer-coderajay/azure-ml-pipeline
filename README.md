@@ -1,44 +1,65 @@
-# Azure ML End-to-End Pipeline
+## The Problem
+Jupyter Notebooks are not production. Training a model locally and passing a pickled file to the engineering team via Slack is an unscalable, fragile workflow. When the data inevitably drifts or the model degrades, there is no automated mechanism to retrain, evaluate, and redeploy.
 
-End-to-end ML pipeline on Azure Machine Learning for heart disease prediction. Features 4-step automated workflow (data prep, training, evaluation, registration), MLflow experiment tracking, and managed endpoint deployment. Built with Azure ML SDK v2, scikit-learn, and auto-scaling compute clusters.
+## The Solution
+A rigid, automated MLOps pipeline built entirely on Azure Machine Learning SDK v2. We containerize and isolate every step of the machine learning lifecycle. Data preparation, model training, and evaluation run on auto-scaling compute clusters. MLflow tracks every hyperparameter and metric. If a model meets the baseline criteria, the pipeline automatically registers it and exposes it as a live REST API.
 
-A complete MLOps pipeline on Azure Machine Learning that takes raw data through to a live prediction API.
+## Business Impact
+* **Repeatable Scale:** What works on one laptop now works reliably in the cloud. You can retrain on a massive dataset simply by triggering the pipeline.
+* **Absolute Traceability:** You know exactly which code, which dataset, and which parameters produced the model currently running in production. 
+* **Zero-Downtime Deployment:** Managed endpoints handle the infrastructure, load balancing, and scaling automatically. The engineering team simply hits the `/score` API.
 
 ## Architecture
 
 ```
-Raw Data (CSV)
-     │
-     ▼
-┌─────────────────────────────────────────────────────┐
-│              Azure ML Pipeline                       │
-│                                                      │
-│  ┌──────────┐   ┌──────────┐   ┌───────────┐       │
-│  │ 1. Data  │──→│ 2. Train │──→│ 3. Eval   │       │
-│  │   Prep   │   │  Model   │   │  Metrics  │       │
-│  └──────────┘   └──────────┘   └───────────┘       │
-│       │              │              │                │
-│       ▼              ▼              ▼                │
-│   train.csv      model.pkl    results.json          │
-│   test.csv       scaler.pkl                         │
-│                      │                               │
-│                      ▼                               │
-│              ┌─────────────┐                         │
-│              │ 4. Register │                         │
-│              │   in Model  │                         │
-│              │   Registry  │                         │
-│              └─────────────┘                         │
-│                      │                               │
-└──────────────────────│───────────────────────────────┘
-                       ▼
-              ┌─────────────────┐
-              │ 5. Deploy as    │
-              │ Managed Online  │
-              │ Endpoint (API)  │
-              └─────────────────┘
-                       │
-                       ▼
-              POST /score → Predictions
+## Deep Dive Architecture: Data Ingestion to Live API
+
+A true MLOps architecture operates in two distinct phases: **Model Training Pipeline** (orchestrating the experimentation and training) and **Deployment & Inference** (serving the model to users).
+
+```text
+========================================================================
+PHASE 1: MODEL TRAINING PIPELINE (Offline / Batch Execution)
+========================================================================
+[Raw Data (CSV)]         <- Stored in Azure ML Datastore
+      │
+      ▼
+[01_data_prep.py]        <- Compute Cluster executes data cleaning
+      │                     Handles missing values, normalizes features
+      │                     Outputs Train (80%) and Test (20%) datasets
+      ▼
+[02_train.py]            <- Compute Cluster executes Scikit-Learn training
+      │                     Trains classification algorithm
+      │                     MLflow tracks hyperparameters and model weights
+      ▼
+[03_evaluate.py]         <- Scores model against the Test dataset
+      │                     Computes accuracy, precision, and recall
+      │                     Outputs metrics.json
+      ▼
+[04_register.py]         <- Reads metrics.json
+      │                     If metrics meet the deployment threshold,
+      │                     pushes model.pkl to Azure ML Model Registry
+========================================================================
+
+========================================================================
+PHASE 2: DEPLOYMENT & INFERENCE (Runtime / Online Execution)
+========================================================================
+[Azure Model Registry]   <- Holds version-controlled model.pkl
+      │                     Linked to a specific Docker environment
+      ▼
+[Managed Endpoint]       <- Azure provisions dedicated serving compute
+      │                     Loads the Docker image and mounts the model
+      ▼
+[REST API POST Request]  <- Client application sends JSON payload
+      │                     (e.g., patient vital statistics)
+      ▼
+[score.py : init()]      <- Runs once when the container starts
+      │                     Deserializes model.pkl into system memory
+      ▼
+[score.py : run()]       <- Runs on every incoming API request
+      │                     Processes JSON payload and calls model.predict()
+      ▼
+[Final Output]           <- Returns JSON response (e.g., {"prediction": 1})
+========================================================================
 ```
 
 ## Azure Services Used
