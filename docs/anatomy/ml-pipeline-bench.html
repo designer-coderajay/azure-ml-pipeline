@@ -1,0 +1,1110 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ML pipeline bench</title><style>
+.iso{
+  --anatomy-page:#0b0b0b;--anatomy-card:#131313;--anatomy-text:#a3a3a3;--anatomy-strong:#e6e6e6;--anatomy-muted:#6e6e6e;
+  --anatomy-paper:#131313;--anatomy-face:#1b1b1b;--anatomy-top:#1c1c1c;
+  --anatomy-shade-0:#0f0f0f;--anatomy-shade-1:#121212;--anatomy-shade-2:#151515;--anatomy-shade-3:#181818;
+  --anatomy-lit-top:#262626;--anatomy-lit-shade:#1d1d1d;
+  --anatomy-hi:#d4d4d4;--anatomy-mid:#6a6a6a;--anatomy-lo:#3e3e3e;--anatomy-faint:#2a2a2a;--anatomy-lit:#ffffff;
+  --anatomy-halo:#050505;--anatomy-halo-opacity:.9;--anatomy-dot:#e6e6e6;
+  --anatomy-red:#ff6b6b;--anatomy-green:#6be0a0;--anatomy-blue:#6b9bff;
+  --anatomy-weight:.6px;--anatomy-ease:cubic-bezier(.32,.72,0,1);
+  --anatomy-mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --anatomy-lift:inset 0 1px 0 0 #ffffff0a,inset 0 0 0 1px #ffffff06,0 0 0 1px #00000026,0 1px 1px -.5px #00000014,0 3px 3px -1.5px #00000014,0 6px 6px -3px #00000014,0 12px 12px -6px #00000014;
+}
+.iso[data-theme="light"]{
+  --anatomy-page:#f2f2ef;--anatomy-card:#fbfbfa;--anatomy-text:#57575a;--anatomy-strong:#18181a;--anatomy-muted:#8c8c90;
+  --anatomy-paper:#fbfbfa;--anatomy-face:#ffffff;--anatomy-top:#ffffff;
+  --anatomy-shade-0:#dcdcd9;--anatomy-shade-1:#e5e5e2;--anatomy-shade-2:#ededea;--anatomy-shade-3:#f4f4f1;
+  --anatomy-lit-top:#ffffff;--anatomy-lit-shade:#eeeeeb;
+  --anatomy-hi:#26262a;--anatomy-mid:#8a8a8f;--anatomy-lo:#b4b4b8;--anatomy-faint:#d4d4d6;--anatomy-lit:#000000;
+  --anatomy-halo:#8a8a80;--anatomy-halo-opacity:.32;--anatomy-dot:#3a3a3e;
+  --anatomy-red:#e5484d;--anatomy-green:#30a46c;--anatomy-blue:#3e63dd;
+  --anatomy-lift:inset 0 1px 0 0 #ffffff,0 0 0 1px #0000000f,0 1px 1px -.5px #0000000a,0 3px 3px -1.5px #0000000a,0 6px 6px -3px #0000000a,0 12px 12px -6px #0000000a;
+}
+.iso-svg{display:block;width:100%;height:auto;overflow:visible}
+.iso-svg path,.iso-svg circle{vector-effect:non-scaling-stroke}
+.iso-fill{fill:var(--anatomy-paper);stroke:none}
+.iso-solid[data-lit]>.iso-fill{fill:var(--anatomy-face)}
+.iso-shade,.iso-top{stroke:none}
+.iso-shade[data-shade="0"]{fill:var(--anatomy-shade-0)}
+.iso-shade[data-shade="1"]{fill:var(--anatomy-shade-1)}
+.iso-shade[data-shade="2"]{fill:var(--anatomy-shade-2)}
+.iso-shade[data-shade="3"]{fill:var(--anatomy-shade-3)}
+.iso-top{fill:var(--anatomy-top)}
+.iso-solid[data-lit]>.iso-top{fill:var(--anatomy-lit-top)}
+.iso-solid[data-lit]>.iso-shade{fill:var(--anatomy-lit-shade)}
+.iso-solid[data-seamless]>.iso-shade,.iso-solid[data-seamless]>.iso-top{stroke-width:.4;stroke-linejoin:round}
+.iso-solid[data-seamless]>.iso-shade[data-shade="0"]{stroke:var(--anatomy-shade-0)}
+.iso-solid[data-seamless]>.iso-shade[data-shade="1"]{stroke:var(--anatomy-shade-1)}
+.iso-solid[data-seamless]>.iso-shade[data-shade="2"]{stroke:var(--anatomy-shade-2)}
+.iso-solid[data-seamless]>.iso-shade[data-shade="3"]{stroke:var(--anatomy-shade-3)}
+.iso-solid[data-seamless]>.iso-top{stroke:var(--anatomy-top)}
+.iso-solid[data-seamless][data-lit]>.iso-top{stroke:var(--anatomy-lit-top)}
+.iso-solid[data-seamless][data-lit]>.iso-shade{stroke:var(--anatomy-lit-shade)}
+.iso-solid[data-lit]>.iso-edge{stroke:var(--anatomy-lit)}
+.iso-halo{fill:var(--anatomy-halo);stroke:none;filter:blur(9px);opacity:var(--anatomy-halo-opacity);transform:translateY(3px)}
+.iso-line{fill:none;stroke:var(--anatomy-lo);stroke-width:var(--anatomy-weight);stroke-linecap:round;stroke-linejoin:round}
+.iso-line[data-tone="hi"]{stroke:var(--anatomy-hi)}
+.iso-line[data-tone="mid"]{stroke:var(--anatomy-mid)}
+.iso-line[data-tone="lo"]{stroke:var(--anatomy-lo)}
+.iso-line[data-tone="faint"]{stroke:var(--anatomy-faint)}
+.iso-line[data-tone="lit"]{stroke:var(--anatomy-lit)}
+.iso-line[data-tone="red"]{stroke:var(--anatomy-red)}
+.iso-line[data-tone="green"]{stroke:var(--anatomy-green)}
+.iso-line[data-tone="blue"]{stroke:var(--anatomy-blue)}
+.iso-line[data-dotted]{stroke-dasharray:.01 3.5;stroke-width:1}
+.iso-line[data-dashed]{stroke-dasharray:3 3}
+.iso-line[data-flow]{stroke-dasharray:2 6}
+.iso-wire-end{fill:var(--anatomy-paper);stroke:var(--anatomy-lo);stroke-width:var(--anatomy-weight)}
+.iso-wire[data-tone="hi"] .iso-wire-end{stroke:var(--anatomy-hi)}
+.iso-wire[data-tone="mid"] .iso-wire-end{stroke:var(--anatomy-mid)}
+.iso-wire[data-tone="faint"] .iso-wire-end{stroke:var(--anatomy-faint)}
+.iso-wire[data-tone="lit"] .iso-wire-end{stroke:var(--anatomy-lit)}
+.iso-dots circle{fill:var(--anatomy-dot);stroke:none;opacity:.32}
+.iso-dots[data-tone="hi"] circle{opacity:.85}
+.iso-dots[data-tone="mid"] circle{opacity:.45}
+.iso-dots[data-tone="lo"] circle{opacity:.22}
+.iso-dots[data-tone="faint"] circle{opacity:.12}
+.iso-face-text{fill:var(--anatomy-mid);font-family:var(--anatomy-mono);letter-spacing:.04em}
+.iso-face-text[data-tone="hi"]{fill:var(--anatomy-hi)}
+.iso-face-text[data-tone="lo"]{fill:var(--anatomy-lo)}
+.iso-face-text[data-tone="faint"]{fill:var(--anatomy-faint)}
+.tb-body{fill:var(--anatomy-shade-2);stroke:none}
+.tb-shine{fill:var(--anatomy-top);stroke:none}
+.tb-shade{fill:var(--anatomy-shade-0);stroke:none}
+.tb-ring{fill:none;stroke:var(--anatomy-lo);stroke-width:.45;stroke-linecap:butt;stroke-linejoin:round}
+.tb-ring[data-tone="mid"]{stroke:var(--anatomy-mid)}
+.tb-ring[data-tone="faint"]{stroke:var(--anatomy-faint)}
+.tb-ring[data-tone="hi"]{stroke:var(--anatomy-hi)}
+@keyframes iso-flow{to{stroke-dashoffset:-32}}
+@keyframes iso-pulse{0%,100%{opacity:.18}12%{opacity:1}40%{opacity:.18}}
+.iso-line[data-flow]{animation:iso-flow 1600ms linear infinite}
+.iso-dots circle[data-pulse]{animation:iso-pulse 1600ms steps(1,end) infinite;animation-delay:var(--pulse-at,0ms)}
+.iso-figure{margin:32px 0 36px}
+.iso-plate{position:relative;padding:52px 24px;border-radius:0;background:var(--anatomy-card);box-shadow:0 0 0 1px var(--anatomy-mid);--anatomy-paper:var(--anatomy-card)}
+.iso-plate-corners{position:absolute;inset:18px 20px;pointer-events:none}
+.iso-plate-corner{position:absolute;color:var(--anatomy-muted);font-family:var(--anatomy-mono);font-size:10.5px;line-height:1;letter-spacing:.04em;white-space:nowrap}
+.iso-plate-corner[data-corner="fig"]{top:0;left:0;color:var(--anatomy-text)}
+.iso-plate-corner[data-corner="title"]{top:0;right:0;text-transform:uppercase;letter-spacing:.1em}
+.iso-plate-corner[data-corner="hint"]{bottom:0;left:0;text-transform:uppercase;letter-spacing:.1em}
+.iso-plate-corner[data-corner="readout"]{right:0;bottom:0;color:var(--anatomy-text);font-variant-numeric:tabular-nums}
+.iso-plate .iso-svg{margin:0 auto}
+.iso-legend{display:grid;gap:8px;margin-top:12px;color:var(--anatomy-muted);font-size:13px;line-height:1.55}
+.iso-keys{display:flex;flex-wrap:wrap;gap:6px 18px}
+.iso-key{display:inline-flex;align-items:center;gap:7px}
+.iso-swatch{width:16px;height:10px;flex:none;overflow:visible}
+.iso-swatch path{fill:none;stroke:var(--anatomy-hi);stroke-width:1;vector-effect:non-scaling-stroke;stroke-linejoin:round;stroke-linecap:round}
+.iso-swatch[data-mark="raised"] path,.iso-swatch[data-mark="flat"] path{stroke:var(--anatomy-mid)}
+.iso-swatch[data-mark="lit"] path{stroke:var(--anatomy-lit)}
+.iso-swatch[data-mark="dim"] path{stroke:var(--anatomy-lo)}
+.iso-swatch[data-mark="dotted"] path{stroke-dasharray:.01 3;stroke-width:1.4}
+.iso-swatch[data-mark="dashed"] path{stroke-dasharray:3 2.5}
+.iso-swatch[data-mark="red"] path{stroke:var(--anatomy-red)}
+.iso-swatch[data-mark="green"] path{stroke:var(--anatomy-green)}
+.iso-swatch[data-mark="blue"] path{stroke:var(--anatomy-blue)}
+.iso-swatch-crease{stroke:var(--anatomy-lo)!important}
+@media (max-width:560px){.iso-plate{padding:48px 12px 70px}.iso-plate-corner[data-corner="hint"]{bottom:18px}}
+@media (prefers-reduced-motion:reduce){.iso-line[data-flow],.iso-dots circle[data-pulse]{animation:none}}
+
+*{box-sizing:border-box}
+html{color-scheme:dark}
+body[data-theme="light"]{color-scheme:light}
+body{margin:0;background:var(--anatomy-page);color:var(--anatomy-text);font:14px/1.6 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+.iso-page{width:min(900px,100% - 32px);margin:64px auto 96px}
+</style></head><body class="iso" data-theme="dark"><main class="iso-page"><style>@media (max-width:560px){.iso-plate-corner[data-corner="hint"]{display:none}.iso-plate-corner[data-corner="readout"]{left:0;right:0;white-space:normal;text-align:right;font-size:9.5px;line-height:1.35}}</style><figure class="iso-figure"><div class="iso-plate"><div class="iso-plate-corners" aria-hidden="true"><span class="iso-plate-corner" data-corner="fig">Fig 1</span><span class="iso-plate-corner" data-corner="title">ML pipeline bench</span><span class="iso-plate-corner" data-corner="hint">Hover to scrub · click to replay</span><span class="iso-plate-corner" data-corner="readout" data-readout>a JSON request arrives: run() returns predictions and probabilities</span></div><div class="iso-stage" tabindex="0" role="slider" aria-label="ML pipeline bench: hover to scrub, click to replay, arrow keys step" aria-valuemin="0" aria-valuemax="100" aria-valuenow="97"><svg xmlns="http://www.w3.org/2000/svg" class="iso-svg" viewBox="0 0 860 400" role="img" aria-label="A bench that works like the Azure ML pipeline in this repo. Back row, left to right: a raw CSV slip is split 80/20 at a first arch, a second arch trains a Random Forest and releases three model files, an evaluator dial scores the model on the held-out slip, and a verifier block lights two lamps for model.pkl and scaler.pkl. Front row: the trained_model folder is registered in a registry cabinet, the endpoint box loads it once, and a request slip goes in while a response slip with predictions comes out."><path class="iso-halo" d="M25.7 170.3L26.3 168.7L27.5 167.3L159.6 43.1L161.3 41.8L163.6 40.6L166.2 39.8L169.1 39.2L172.1 38.8L175.3 38.8L178.4 39.1L181.3 39.7L825.9 211.1L828.5 212L830.7 213.1L832.4 214.4L833.7 215.8L834.3 217.4L834.3 219L834.3 237.5L833.7 239L832.5 240.5L700.4 364.7L698.7 366L696.4 367.1L693.8 367.9L690.9 368.6L687.9 368.9L684.7 368.9L681.6 368.6L678.7 368L34.1 196.6L31.5 195.7L29.3 194.6L27.6 193.3L26.3 191.9L25.7 190.3L25.7 188.8Z"/><g class="iso-solid"><path class="iso-fill" d="M170.9 78.3L171.3 76.9L172.3 75.6L173.9 74.4L175.9 73.5L178.4 72.8L181 72.4L183.8 72.3L186.6 72.5L189.2 73L191.5 73.8L193.4 74.8L194.8 76L195.6 77.4L195.8 78.8L195.8 81.2L195.4 82.6L194.3 83.9L192.7 85.1L190.7 86L188.3 86.7L185.6 87.1L182.8 87.2L180.1 87L177.5 86.5L175.2 85.7L173.3 84.7L171.9 83.5L171.1 82.1L170.9 80.7Z"/><path class="iso-shade" data-shade="0" d="M194.3 83.9L192.7 85.1L192.7 82.6L194.3 81.4ZM192.7 85.1L190.7 86L190.7 83.5L192.7 82.6ZM195.8 81.2L195.4 82.6L195.4 80.1L195.8 78.8ZM195.4 82.6L194.3 83.9L194.3 81.4L195.4 80.1Z"/><path class="iso-shade" data-shade="1" d="M190.7 86L188.3 86.7L188.3 84.2L190.7 83.5ZM188.3 86.7L185.6 87.1L185.6 84.6L188.3 84.2ZM185.6 87.1L182.8 87.2L182.8 84.7L185.6 84.6Z"/><path class="iso-shade" data-shade="2" d="M182.8 87.2L180.1 87L180.1 84.5L182.8 84.7ZM180.1 87L177.5 86.5L177.5 84L180.1 84.5Z"/><path class="iso-shade" data-shade="3" d="M177.5 86.5L175.2 85.7L175.2 83.2L177.5 84ZM175.2 85.7L173.3 84.7L173.3 82.2L175.2 83.2ZM173.3 84.7L171.9 83.5L171.9 81L173.3 82.2ZM171.9 83.5L171.1 82.1L171.1 79.7L171.9 81ZM171.1 82.1L170.9 80.7L170.9 78.3L171.1 79.7Z"/><path class="iso-top" d="M194.3 81.4L192.7 82.6L190.7 83.5L188.3 84.2L185.6 84.6L182.8 84.7L180.1 84.5L177.5 84L175.2 83.2L173.3 82.2L171.9 81L171.1 79.7L170.9 78.3L171.3 76.9L172.3 75.6L173.9 74.4L175.9 73.5L178.4 72.8L181 72.4L183.8 72.3L186.6 72.5L189.2 73L191.5 73.8L193.4 74.8L194.8 76L195.6 77.4L195.8 78.8L195.4 80.1Z"/><path class="iso-line iso-crease" data-tone="faint" d="M195.8 78.8L195.4 80.1L194.3 81.4L192.7 82.6L190.7 83.5L188.3 84.2L185.6 84.6L182.8 84.7L180.1 84.5L177.5 84L175.2 83.2L173.3 82.2L171.9 81L171.1 79.7L170.9 78.3"/><path class="iso-line iso-edge" data-tone="lo" d="M170.9 78.3L171.3 76.9L172.3 75.6L173.9 74.4L175.9 73.5L178.4 72.8L181 72.4L183.8 72.3L186.6 72.5L189.2 73L191.5 73.8L193.4 74.8L194.8 76L195.6 77.4L195.8 78.8M195.8 81.2L195.4 82.6L194.3 83.9L192.7 85.1L190.7 86L188.3 86.7L185.6 87.1L182.8 87.2L180.1 87L177.5 86.5L175.2 85.7L173.3 84.7L171.9 83.5L171.1 82.1L170.9 80.7M170.9 78.3L170.9 80.7M195.8 78.8L195.8 81.2"/></g><g class="iso-solid"><path class="iso-fill" d="M173.7 73.1L174 72L174.8 71L176 70.1L177.6 69.4L179.5 68.9L181.6 68.5L183.7 68.5L185.8 68.6L187.8 69L189.6 69.6L191.1 70.4L192.1 71.4L192.8 72.4L192.9 73.5L192.9 78.7L192.6 79.8L191.8 80.8L190.6 81.7L189 82.4L187.1 82.9L185.1 83.2L182.9 83.3L180.8 83.2L178.8 82.8L177 82.1L175.6 81.4L174.5 80.4L173.9 79.4L173.7 78.3Z"/><path class="iso-shade" data-shade="0" d="M191.8 80.8L190.6 81.7L190.6 76.4L191.8 75.5ZM190.6 81.7L189 82.4L189 77.1L190.6 76.4ZM192.9 78.7L192.6 79.8L192.6 74.5L192.9 73.5ZM192.6 79.8L191.8 80.8L191.8 75.5L192.6 74.5Z"/><path class="iso-shade" data-shade="1" d="M189 82.4L187.1 82.9L187.1 77.7L189 77.1ZM187.1 82.9L185.1 83.2L185.1 78L187.1 77.7ZM185.1 83.2L182.9 83.3L182.9 78.1L185.1 78Z"/><path class="iso-shade" data-shade="2" d="M182.9 83.3L180.8 83.2L180.8 77.9L182.9 78.1ZM180.8 83.2L178.8 82.8L178.8 77.5L180.8 77.9Z"/><path class="iso-shade" data-shade="3" d="M178.8 82.8L177 82.1L177 76.9L178.8 77.5ZM177 82.1L175.6 81.4L175.6 76.1L177 76.9ZM175.6 81.4L174.5 80.4L174.5 75.2L175.6 76.1ZM174.5 80.4L173.9 79.4L173.9 74.1L174.5 75.2ZM173.9 79.4L173.7 78.3L173.7 73.1L173.9 74.1Z"/><path class="iso-top" d="M191.8 75.5L190.6 76.4L189 77.1L187.1 77.7L185.1 78L182.9 78.1L180.8 77.9L178.8 77.5L177 76.9L175.6 76.1L174.5 75.2L173.9 74.1L173.7 73.1L174 72L174.8 71L176 70.1L177.6 69.4L179.5 68.9L181.6 68.5L183.7 68.5L185.8 68.6L187.8 69L189.6 69.6L191.1 70.4L192.1 71.4L192.8 72.4L192.9 73.5L192.6 74.5Z"/><path class="iso-line iso-crease" data-tone="faint" d="M192.9 73.5L192.6 74.5L191.8 75.5L190.6 76.4L189 77.1L187.1 77.7L185.1 78L182.9 78.1L180.8 77.9L178.8 77.5L177 76.9L175.6 76.1L174.5 75.2L173.9 74.1L173.7 73.1"/><path class="iso-line iso-edge" data-tone="mid" d="M173.7 73.1L174 72L174.8 71L176 70.1L177.6 69.4L179.5 68.9L181.6 68.5L183.7 68.5L185.8 68.6L187.8 69L189.6 69.6L191.1 70.4L192.1 71.4L192.8 72.4L192.9 73.5M192.9 78.7L192.6 79.8L191.8 80.8L190.6 81.7L189 82.4L187.1 82.9L185.1 83.2L182.9 83.3L180.8 83.2L178.8 82.8L177 82.1L175.6 81.4L174.5 80.4L173.9 79.4L173.7 78.3M173.7 73.1L173.7 78.3M192.9 73.5L192.9 78.7"/></g><g class="iso-solid"><path class="iso-fill" d="M472.7 158.5L473.1 157.1L474.2 155.8L475.7 154.7L477.8 153.7L480.2 153L482.9 152.6L485.7 152.5L488.4 152.7L491 153.3L493.3 154L495.2 155.1L496.6 156.3L497.4 157.6L497.6 159L497.6 161.5L497.2 162.9L496.2 164.2L494.6 165.3L492.5 166.2L490.1 166.9L487.5 167.4L484.7 167.5L481.9 167.2L479.3 166.7L477 165.9L475.1 164.9L473.7 163.7L472.9 162.4L472.7 161Z"/><path class="iso-shade" data-shade="0" d="M496.2 164.2L494.6 165.3L494.6 162.8L496.2 161.7ZM494.6 165.3L492.5 166.2L492.5 163.8L494.6 162.8ZM497.6 161.5L497.2 162.9L497.2 160.4L497.6 159ZM497.2 162.9L496.2 164.2L496.2 161.7L497.2 160.4Z"/><path class="iso-shade" data-shade="1" d="M492.5 166.2L490.1 166.9L490.1 164.5L492.5 163.8ZM490.1 166.9L487.5 167.4L487.5 164.9L490.1 164.5ZM487.5 167.4L484.7 167.5L484.7 165L487.5 164.9Z"/><path class="iso-shade" data-shade="2" d="M484.7 167.5L481.9 167.2L481.9 164.8L484.7 165ZM481.9 167.2L479.3 166.7L479.3 164.3L481.9 164.8Z"/><path class="iso-shade" data-shade="3" d="M479.3 166.7L477 165.9L477 163.5L479.3 164.3ZM477 165.9L475.1 164.9L475.1 162.4L477 163.5ZM475.1 164.9L473.7 163.7L473.7 161.2L475.1 162.4ZM473.7 163.7L472.9 162.4L472.9 159.9L473.7 161.2ZM472.9 162.4L472.7 161L472.7 158.5L472.9 159.9Z"/><path class="iso-top" d="M496.2 161.7L494.6 162.8L492.5 163.8L490.1 164.5L487.5 164.9L484.7 165L481.9 164.8L479.3 164.3L477 163.5L475.1 162.4L473.7 161.2L472.9 159.9L472.7 158.5L473.1 157.1L474.2 155.8L475.7 154.7L477.8 153.7L480.2 153L482.9 152.6L485.7 152.5L488.4 152.7L491 153.3L493.3 154L495.2 155.1L496.6 156.3L497.4 157.6L497.6 159L497.2 160.4Z"/><path class="iso-line iso-crease" data-tone="faint" d="M497.6 159L497.2 160.4L496.2 161.7L494.6 162.8L492.5 163.8L490.1 164.5L487.5 164.9L484.7 165L481.9 164.8L479.3 164.3L477 163.5L475.1 162.4L473.7 161.2L472.9 159.9L472.7 158.5"/><path class="iso-line iso-edge" data-tone="lo" d="M472.7 158.5L473.1 157.1L474.2 155.8L475.7 154.7L477.8 153.7L480.2 153L482.9 152.6L485.7 152.5L488.4 152.7L491 153.3L493.3 154L495.2 155.1L496.6 156.3L497.4 157.6L497.6 159M497.6 161.5L497.2 162.9L496.2 164.2L494.6 165.3L492.5 166.2L490.1 166.9L487.5 167.4L484.7 167.5L481.9 167.2L479.3 166.7L477 165.9L475.1 164.9L473.7 163.7L472.9 162.4L472.7 161M472.7 158.5L472.7 161M497.6 159L497.6 161.5"/></g><g class="iso-solid"><path class="iso-fill" d="M475.6 153.3L475.9 152.3L476.7 151.3L477.9 150.4L479.5 149.6L481.3 149.1L483.4 148.8L485.6 148.7L487.7 148.9L489.7 149.3L491.5 149.9L492.9 150.7L494 151.6L494.6 152.6L494.8 153.7L494.8 159L494.5 160L493.7 161L492.4 161.9L490.9 162.6L489 163.2L486.9 163.5L484.8 163.6L482.7 163.4L480.7 163L478.9 162.4L477.4 161.6L476.3 160.7L475.7 159.6L475.6 158.6Z"/><path class="iso-shade" data-shade="0" d="M493.7 161L492.4 161.9L492.4 156.7L493.7 155.8ZM492.4 161.9L490.9 162.6L490.9 157.4L492.4 156.7ZM494.8 159L494.5 160L494.5 154.8L494.8 153.7ZM494.5 160L493.7 161L493.7 155.8L494.5 154.8Z"/><path class="iso-shade" data-shade="1" d="M490.9 162.6L489 163.2L489 157.9L490.9 157.4ZM489 163.2L486.9 163.5L486.9 158.2L489 157.9ZM486.9 163.5L484.8 163.6L484.8 158.3L486.9 158.2Z"/><path class="iso-shade" data-shade="2" d="M484.8 163.6L482.7 163.4L482.7 158.2L484.8 158.3ZM482.7 163.4L480.7 163L480.7 157.8L482.7 158.2Z"/><path class="iso-shade" data-shade="3" d="M480.7 163L478.9 162.4L478.9 157.2L480.7 157.8ZM478.9 162.4L477.4 161.6L477.4 156.4L478.9 157.2ZM477.4 161.6L476.3 160.7L476.3 155.4L477.4 156.4ZM476.3 160.7L475.7 159.6L475.7 154.4L476.3 155.4ZM475.7 159.6L475.6 158.6L475.6 153.3L475.7 154.4Z"/><path class="iso-top" d="M493.7 155.8L492.4 156.7L490.9 157.4L489 157.9L486.9 158.2L484.8 158.3L482.7 158.2L480.7 157.8L478.9 157.2L477.4 156.4L476.3 155.4L475.7 154.4L475.6 153.3L475.9 152.3L476.7 151.3L477.9 150.4L479.5 149.6L481.3 149.1L483.4 148.8L485.6 148.7L487.7 148.9L489.7 149.3L491.5 149.9L492.9 150.7L494 151.6L494.6 152.6L494.8 153.7L494.5 154.8Z"/><path class="iso-line iso-crease" data-tone="faint" d="M494.8 153.7L494.5 154.8L493.7 155.8L492.4 156.7L490.9 157.4L489 157.9L486.9 158.2L484.8 158.3L482.7 158.2L480.7 157.8L478.9 157.2L477.4 156.4L476.3 155.4L475.7 154.4L475.6 153.3"/><path class="iso-line iso-edge" data-tone="mid" d="M475.6 153.3L475.9 152.3L476.7 151.3L477.9 150.4L479.5 149.6L481.3 149.1L483.4 148.8L485.6 148.7L487.7 148.9L489.7 149.3L491.5 149.9L492.9 150.7L494 151.6L494.6 152.6L494.8 153.7M494.8 159L494.5 160L493.7 161L492.4 161.9L490.9 162.6L489 163.2L486.9 163.5L484.8 163.6L482.7 163.4L480.7 163L478.9 162.4L477.4 161.6L476.3 160.7L475.7 159.6L475.6 158.6M475.6 153.3L475.6 158.6M494.8 153.7L494.8 159"/></g><g class="iso-solid"><path class="iso-fill" d="M60.5 182L60.9 180.6L62 179.3L63.6 178.2L65.6 177.2L68 176.6L70.7 176.1L73.5 176L76.2 176.3L78.8 176.8L81.1 177.6L83 178.6L84.4 179.8L85.2 181.1L85.4 182.5L85.4 185L85 186.4L84 187.7L82.4 188.8L80.4 189.8L77.9 190.5L75.3 190.9L72.5 191L69.7 190.8L67.1 190.2L64.8 189.5L62.9 188.4L61.5 187.2L60.7 185.9L60.5 184.5Z"/><path class="iso-shade" data-shade="0" d="M84 187.7L82.4 188.8L82.4 186.3L84 185.2ZM82.4 188.8L80.4 189.8L80.4 187.3L82.4 186.3ZM85.4 185L85 186.4L85 183.9L85.4 182.5ZM85 186.4L84 187.7L84 185.2L85 183.9Z"/><path class="iso-shade" data-shade="1" d="M80.4 189.8L77.9 190.5L77.9 188L80.4 187.3ZM77.9 190.5L75.3 190.9L75.3 188.4L77.9 188ZM75.3 190.9L72.5 191L72.5 188.5L75.3 188.4Z"/><path class="iso-shade" data-shade="2" d="M72.5 191L69.7 190.8L69.7 188.3L72.5 188.5ZM69.7 190.8L67.1 190.2L67.1 187.8L69.7 188.3Z"/><path class="iso-shade" data-shade="3" d="M67.1 190.2L64.8 189.5L64.8 187L67.1 187.8ZM64.8 189.5L62.9 188.4L62.9 186L64.8 187ZM62.9 188.4L61.5 187.2L61.5 184.7L62.9 186ZM61.5 187.2L60.7 185.9L60.7 183.4L61.5 184.7ZM60.7 185.9L60.5 184.5L60.5 182L60.7 183.4Z"/><path class="iso-top" d="M84 185.2L82.4 186.3L80.4 187.3L77.9 188L75.3 188.4L72.5 188.5L69.7 188.3L67.1 187.8L64.8 187L62.9 186L61.5 184.7L60.7 183.4L60.5 182L60.9 180.6L62 179.3L63.6 178.2L65.6 177.2L68 176.6L70.7 176.1L73.5 176L76.2 176.3L78.8 176.8L81.1 177.6L83 178.6L84.4 179.8L85.2 181.1L85.4 182.5L85 183.9Z"/><path class="iso-line iso-crease" data-tone="faint" d="M85.4 182.5L85 183.9L84 185.2L82.4 186.3L80.4 187.3L77.9 188L75.3 188.4L72.5 188.5L69.7 188.3L67.1 187.8L64.8 187L62.9 186L61.5 184.7L60.7 183.4L60.5 182"/><path class="iso-line iso-edge" data-tone="lo" d="M60.5 182L60.9 180.6L62 179.3L63.6 178.2L65.6 177.2L68 176.6L70.7 176.1L73.5 176L76.2 176.3L78.8 176.8L81.1 177.6L83 178.6L84.4 179.8L85.2 181.1L85.4 182.5M85.4 185L85 186.4L84 187.7L82.4 188.8L80.4 189.8L77.9 190.5L75.3 190.9L72.5 191L69.7 190.8L67.1 190.2L64.8 189.5L62.9 188.4L61.5 187.2L60.7 185.9L60.5 184.5M60.5 182L60.5 184.5M85.4 182.5L85.4 185"/></g><g class="iso-solid"><path class="iso-fill" d="M63.4 176.8L63.7 175.8L64.5 174.8L65.7 173.9L67.3 173.2L69.2 172.6L71.2 172.3L73.4 172.2L75.5 172.4L77.5 172.8L79.3 173.4L80.7 174.2L81.8 175.1L82.4 176.1L82.6 177.2L82.6 182.5L82.3 183.5L81.5 184.5L80.2 185.4L78.7 186.1L76.8 186.7L74.7 187L72.6 187.1L70.5 186.9L68.5 186.5L66.7 185.9L65.2 185.1L64.2 184.2L63.5 183.2L63.4 182.1Z"/><path class="iso-shade" data-shade="0" d="M81.5 184.5L80.2 185.4L80.2 180.2L81.5 179.3ZM80.2 185.4L78.7 186.1L78.7 180.9L80.2 180.2ZM82.6 182.5L82.3 183.5L82.3 178.3L82.6 177.2ZM82.3 183.5L81.5 184.5L81.5 179.3L82.3 178.3Z"/><path class="iso-shade" data-shade="1" d="M78.7 186.1L76.8 186.7L76.8 181.4L78.7 180.9ZM76.8 186.7L74.7 187L74.7 181.8L76.8 181.4ZM74.7 187L72.6 187.1L72.6 181.8L74.7 181.8Z"/><path class="iso-shade" data-shade="2" d="M72.6 187.1L70.5 186.9L70.5 181.7L72.6 181.8ZM70.5 186.9L68.5 186.5L68.5 181.3L70.5 181.7Z"/><path class="iso-shade" data-shade="3" d="M68.5 186.5L66.7 185.9L66.7 180.7L68.5 181.3ZM66.7 185.9L65.2 185.1L65.2 179.9L66.7 180.7ZM65.2 185.1L64.2 184.2L64.2 178.9L65.2 179.9ZM64.2 184.2L63.5 183.2L63.5 177.9L64.2 178.9ZM63.5 183.2L63.4 182.1L63.4 176.8L63.5 177.9Z"/><path class="iso-top" d="M81.5 179.3L80.2 180.2L78.7 180.9L76.8 181.4L74.7 181.8L72.6 181.8L70.5 181.7L68.5 181.3L66.7 180.7L65.2 179.9L64.2 178.9L63.5 177.9L63.4 176.8L63.7 175.8L64.5 174.8L65.7 173.9L67.3 173.2L69.2 172.6L71.2 172.3L73.4 172.2L75.5 172.4L77.5 172.8L79.3 173.4L80.7 174.2L81.8 175.1L82.4 176.1L82.6 177.2L82.3 178.3Z"/><path class="iso-line iso-crease" data-tone="faint" d="M82.6 177.2L82.3 178.3L81.5 179.3L80.2 180.2L78.7 180.9L76.8 181.4L74.7 181.8L72.6 181.8L70.5 181.7L68.5 181.3L66.7 180.7L65.2 179.9L64.2 178.9L63.5 177.9L63.4 176.8"/><path class="iso-line iso-edge" data-tone="mid" d="M63.4 176.8L63.7 175.8L64.5 174.8L65.7 173.9L67.3 173.2L69.2 172.6L71.2 172.3L73.4 172.2L75.5 172.4L77.5 172.8L79.3 173.4L80.7 174.2L81.8 175.1L82.4 176.1L82.6 177.2M82.6 182.5L82.3 183.5L81.5 184.5L80.2 185.4L78.7 186.1L76.8 186.7L74.7 187L72.6 187.1L70.5 186.9L68.5 186.5L66.7 185.9L65.2 185.1L64.2 184.2L63.5 183.2L63.4 182.1M63.4 176.8L63.4 182.1M82.6 177.2L82.6 182.5"/></g><g class="iso-solid"><path class="iso-fill" d="M774.6 238.8L775 237.4L776 236.1L777.6 234.9L779.6 234L782.1 233.3L784.7 232.9L787.5 232.8L790.3 233L792.9 233.5L795.2 234.3L797.1 235.3L798.5 236.5L799.3 237.9L799.5 239.3L799.5 241.7L799.1 243.1L798 244.4L796.4 245.6L794.4 246.5L792 247.2L789.3 247.6L786.5 247.7L783.8 247.5L781.2 247L778.9 246.2L777 245.2L775.6 244L774.8 242.6L774.6 241.2Z"/><path class="iso-shade" data-shade="0" d="M798 244.4L796.4 245.6L796.4 243.1L798 241.9ZM796.4 245.6L794.4 246.5L794.4 244L796.4 243.1ZM799.5 241.7L799.1 243.1L799.1 240.6L799.5 239.3ZM799.1 243.1L798 244.4L798 241.9L799.1 240.6Z"/><path class="iso-shade" data-shade="1" d="M794.4 246.5L792 247.2L792 244.7L794.4 244ZM792 247.2L789.3 247.6L789.3 245.1L792 244.7ZM789.3 247.6L786.5 247.7L786.5 245.2L789.3 245.1Z"/><path class="iso-shade" data-shade="2" d="M786.5 247.7L783.8 247.5L783.8 245L786.5 245.2ZM783.8 247.5L781.2 247L781.2 244.5L783.8 245Z"/><path class="iso-shade" data-shade="3" d="M781.2 247L778.9 246.2L778.9 243.7L781.2 244.5ZM778.9 246.2L777 245.2L777 242.7L778.9 243.7ZM777 245.2L775.6 244L775.6 241.5L777 242.7ZM775.6 244L774.8 242.6L774.8 240.2L775.6 241.5ZM774.8 242.6L774.6 241.2L774.6 238.8L774.8 240.2Z"/><path class="iso-top" d="M798 241.9L796.4 243.1L794.4 244L792 244.7L789.3 245.1L786.5 245.2L783.8 245L781.2 244.5L778.9 243.7L777 242.7L775.6 241.5L774.8 240.2L774.6 238.8L775 237.4L776 236.1L777.6 234.9L779.6 234L782.1 233.3L784.7 232.9L787.5 232.8L790.3 233L792.9 233.5L795.2 234.3L797.1 235.3L798.5 236.5L799.3 237.9L799.5 239.3L799.1 240.6Z"/><path class="iso-line iso-crease" data-tone="faint" d="M799.5 239.3L799.1 240.6L798 241.9L796.4 243.1L794.4 244L792 244.7L789.3 245.1L786.5 245.2L783.8 245L781.2 244.5L778.9 243.7L777 242.7L775.6 241.5L774.8 240.2L774.6 238.8"/><path class="iso-line iso-edge" data-tone="lo" d="M774.6 238.8L775 237.4L776 236.1L777.6 234.9L779.6 234L782.1 233.3L784.7 232.9L787.5 232.8L790.3 233L792.9 233.5L795.2 234.3L797.1 235.3L798.5 236.5L799.3 237.9L799.5 239.3M799.5 241.7L799.1 243.1L798 244.4L796.4 245.6L794.4 246.5L792 247.2L789.3 247.6L786.5 247.7L783.8 247.5L781.2 247L778.9 246.2L777 245.2L775.6 244L774.8 242.6L774.6 241.2M774.6 238.8L774.6 241.2M799.5 239.3L799.5 241.7"/></g><g class="iso-solid"><path class="iso-fill" d="M777.4 233.6L777.7 232.5L778.5 231.5L779.8 230.6L781.3 229.9L783.2 229.4L785.3 229L787.4 229L789.5 229.1L791.5 229.5L793.3 230.1L794.8 230.9L795.8 231.9L796.5 232.9L796.6 234L796.6 239.2L796.3 240.3L795.5 241.3L794.3 242.2L792.7 242.9L790.8 243.4L788.8 243.7L786.6 243.8L784.5 243.6L782.5 243.3L780.7 242.6L779.3 241.9L778.2 240.9L777.6 239.9L777.4 238.8Z"/><path class="iso-shade" data-shade="0" d="M795.5 241.3L794.3 242.2L794.3 236.9L795.5 236ZM794.3 242.2L792.7 242.9L792.7 237.6L794.3 236.9ZM796.6 239.2L796.3 240.3L796.3 235L796.6 234ZM796.3 240.3L795.5 241.3L795.5 236L796.3 235Z"/><path class="iso-shade" data-shade="1" d="M792.7 242.9L790.8 243.4L790.8 238.2L792.7 237.6ZM790.8 243.4L788.8 243.7L788.8 238.5L790.8 238.2ZM788.8 243.7L786.6 243.8L786.6 238.6L788.8 238.5Z"/><path class="iso-shade" data-shade="2" d="M786.6 243.8L784.5 243.6L784.5 238.4L786.6 238.6ZM784.5 243.6L782.5 243.3L782.5 238L784.5 238.4Z"/><path class="iso-shade" data-shade="3" d="M782.5 243.3L780.7 242.6L780.7 237.4L782.5 238ZM780.7 242.6L779.3 241.9L779.3 236.6L780.7 237.4ZM779.3 241.9L778.2 240.9L778.2 235.7L779.3 236.6ZM778.2 240.9L777.6 239.9L777.6 234.6L778.2 235.7ZM777.6 239.9L777.4 238.8L777.4 233.6L777.6 234.6Z"/><path class="iso-top" d="M795.5 236L794.3 236.9L792.7 237.6L790.8 238.2L788.8 238.5L786.6 238.6L784.5 238.4L782.5 238L780.7 237.4L779.3 236.6L778.2 235.7L777.6 234.6L777.4 233.6L777.7 232.5L778.5 231.5L779.8 230.6L781.3 229.9L783.2 229.4L785.3 229L787.4 229L789.5 229.1L791.5 229.5L793.3 230.1L794.8 230.9L795.8 231.9L796.5 232.9L796.6 234L796.3 235Z"/><path class="iso-line iso-crease" data-tone="faint" d="M796.6 234L796.3 235L795.5 236L794.3 236.9L792.7 237.6L790.8 238.2L788.8 238.5L786.6 238.6L784.5 238.4L782.5 238L780.7 237.4L779.3 236.6L778.2 235.7L777.6 234.6L777.4 233.6"/><path class="iso-line iso-edge" data-tone="mid" d="M777.4 233.6L777.7 232.5L778.5 231.5L779.8 230.6L781.3 229.9L783.2 229.4L785.3 229L787.4 229L789.5 229.1L791.5 229.5L793.3 230.1L794.8 230.9L795.8 231.9L796.5 232.9L796.6 234M796.6 239.2L796.3 240.3L795.5 241.3L794.3 242.2L792.7 242.9L790.8 243.4L788.8 243.7L786.6 243.8L784.5 243.6L782.5 243.3L780.7 242.6L779.3 241.9L778.2 240.9L777.6 239.9L777.4 238.8M777.4 233.6L777.4 238.8M796.6 234L796.6 239.2"/></g><g class="iso-solid"><path class="iso-fill" d="M362.4 262.3L362.8 260.9L363.8 259.6L365.4 258.4L367.5 257.5L369.9 256.8L372.5 256.4L375.3 256.3L378.1 256.5L380.7 257L383 257.8L384.9 258.8L386.3 260L387.1 261.4L387.3 262.8L387.3 265.2L386.9 266.6L385.8 267.9L384.3 269.1L382.2 270L379.8 270.7L377.1 271.1L374.3 271.2L371.6 271L369 270.5L366.7 269.7L364.8 268.7L363.4 267.5L362.6 266.1L362.4 264.7Z"/><path class="iso-shade" data-shade="0" d="M385.8 267.9L384.3 269.1L384.3 266.6L385.8 265.4ZM384.3 269.1L382.2 270L382.2 267.5L384.3 266.6ZM387.3 265.2L386.9 266.6L386.9 264.1L387.3 262.8ZM386.9 266.6L385.8 267.9L385.8 265.4L386.9 264.1Z"/><path class="iso-shade" data-shade="1" d="M382.2 270L379.8 270.7L379.8 268.2L382.2 267.5ZM379.8 270.7L377.1 271.1L377.1 268.6L379.8 268.2ZM377.1 271.1L374.3 271.2L374.3 268.7L377.1 268.6Z"/><path class="iso-shade" data-shade="2" d="M374.3 271.2L371.6 271L371.6 268.5L374.3 268.7ZM371.6 271L369 270.5L369 268L371.6 268.5Z"/><path class="iso-shade" data-shade="3" d="M369 270.5L366.7 269.7L366.7 267.2L369 268ZM366.7 269.7L364.8 268.7L364.8 266.2L366.7 267.2ZM364.8 268.7L363.4 267.5L363.4 265L364.8 266.2ZM363.4 267.5L362.6 266.1L362.6 263.7L363.4 265ZM362.6 266.1L362.4 264.7L362.4 262.3L362.6 263.7Z"/><path class="iso-top" d="M385.8 265.4L384.3 266.6L382.2 267.5L379.8 268.2L377.1 268.6L374.3 268.7L371.6 268.5L369 268L366.7 267.2L364.8 266.2L363.4 265L362.6 263.7L362.4 262.3L362.8 260.9L363.8 259.6L365.4 258.4L367.5 257.5L369.9 256.8L372.5 256.4L375.3 256.3L378.1 256.5L380.7 257L383 257.8L384.9 258.8L386.3 260L387.1 261.4L387.3 262.8L386.9 264.1Z"/><path class="iso-line iso-crease" data-tone="faint" d="M387.3 262.8L386.9 264.1L385.8 265.4L384.3 266.6L382.2 267.5L379.8 268.2L377.1 268.6L374.3 268.7L371.6 268.5L369 268L366.7 267.2L364.8 266.2L363.4 265L362.6 263.7L362.4 262.3"/><path class="iso-line iso-edge" data-tone="lo" d="M362.4 262.3L362.8 260.9L363.8 259.6L365.4 258.4L367.5 257.5L369.9 256.8L372.5 256.4L375.3 256.3L378.1 256.5L380.7 257L383 257.8L384.9 258.8L386.3 260L387.1 261.4L387.3 262.8M387.3 265.2L386.9 266.6L385.8 267.9L384.3 269.1L382.2 270L379.8 270.7L377.1 271.1L374.3 271.2L371.6 271L369 270.5L366.7 269.7L364.8 268.7L363.4 267.5L362.6 266.1L362.4 264.7M362.4 262.3L362.4 264.7M387.3 262.8L387.3 265.2"/></g><g class="iso-solid"><path class="iso-fill" d="M365.2 257.1L365.5 256L366.3 255L367.6 254.1L369.1 253.4L371 252.9L373.1 252.6L375.2 252.5L377.3 252.6L379.3 253L381.1 253.6L382.6 254.4L383.7 255.4L384.3 256.4L384.4 257.5L384.4 262.7L384.1 263.8L383.3 264.8L382.1 265.7L380.5 266.4L378.7 266.9L376.6 267.2L374.4 267.3L372.3 267.2L370.3 266.8L368.5 266.2L367.1 265.4L366 264.4L365.4 263.4L365.2 262.3Z"/><path class="iso-shade" data-shade="0" d="M383.3 264.8L382.1 265.7L382.1 260.4L383.3 259.5ZM382.1 265.7L380.5 266.4L380.5 261.2L382.1 260.4ZM384.4 262.7L384.1 263.8L384.1 258.5L384.4 257.5ZM384.1 263.8L383.3 264.8L383.3 259.5L384.1 258.5Z"/><path class="iso-shade" data-shade="1" d="M380.5 266.4L378.7 266.9L378.7 261.7L380.5 261.2ZM378.7 266.9L376.6 267.2L376.6 262L378.7 261.7ZM376.6 267.2L374.4 267.3L374.4 262.1L376.6 262Z"/><path class="iso-shade" data-shade="2" d="M374.4 267.3L372.3 267.2L372.3 261.9L374.4 262.1ZM372.3 267.2L370.3 266.8L370.3 261.5L372.3 261.9Z"/><path class="iso-shade" data-shade="3" d="M370.3 266.8L368.5 266.2L368.5 260.9L370.3 261.5ZM368.5 266.2L367.1 265.4L367.1 260.1L368.5 260.9ZM367.1 265.4L366 264.4L366 259.2L367.1 260.1ZM366 264.4L365.4 263.4L365.4 258.2L366 259.2ZM365.4 263.4L365.2 262.3L365.2 257.1L365.4 258.2Z"/><path class="iso-top" d="M383.3 259.5L382.1 260.4L380.5 261.2L378.7 261.7L376.6 262L374.4 262.1L372.3 261.9L370.3 261.5L368.5 260.9L367.1 260.1L366 259.2L365.4 258.2L365.2 257.1L365.5 256L366.3 255L367.6 254.1L369.1 253.4L371 252.9L373.1 252.6L375.2 252.5L377.3 252.6L379.3 253L381.1 253.6L382.6 254.4L383.7 255.4L384.3 256.4L384.4 257.5L384.1 258.5Z"/><path class="iso-line iso-crease" data-tone="faint" d="M384.4 257.5L384.1 258.5L383.3 259.5L382.1 260.4L380.5 261.2L378.7 261.7L376.6 262L374.4 262.1L372.3 261.9L370.3 261.5L368.5 260.9L367.1 260.1L366 259.2L365.4 258.2L365.2 257.1"/><path class="iso-line iso-edge" data-tone="mid" d="M365.2 257.1L365.5 256L366.3 255L367.6 254.1L369.1 253.4L371 252.9L373.1 252.6L375.2 252.5L377.3 252.6L379.3 253L381.1 253.6L382.6 254.4L383.7 255.4L384.3 256.4L384.4 257.5M384.4 262.7L384.1 263.8L383.3 264.8L382.1 265.7L380.5 266.4L378.7 266.9L376.6 267.2L374.4 267.3L372.3 267.2L370.3 266.8L368.5 266.2L367.1 265.4L366 264.4L365.4 263.4L365.2 262.3M365.2 257.1L365.2 262.3M384.4 257.5L384.4 262.7"/></g><g class="iso-solid"><path class="iso-fill" d="M664.2 342.5L664.6 341.1L665.7 339.8L667.3 338.7L669.3 337.7L671.7 337.1L674.4 336.6L677.2 336.5L679.9 336.8L682.5 337.3L684.8 338.1L686.7 339.1L688.1 340.3L688.9 341.6L689.1 343L689.1 345.5L688.7 346.9L687.7 348.2L686.1 349.3L684.1 350.3L681.6 351L679 351.4L676.2 351.5L673.4 351.3L670.8 350.7L668.5 350L666.6 348.9L665.2 347.7L664.4 346.4L664.2 345Z"/><path class="iso-shade" data-shade="0" d="M687.7 348.2L686.1 349.3L686.1 346.8L687.7 345.7ZM686.1 349.3L684.1 350.3L684.1 347.8L686.1 346.8ZM689.1 345.5L688.7 346.9L688.7 344.4L689.1 343ZM688.7 346.9L687.7 348.2L687.7 345.7L688.7 344.4Z"/><path class="iso-shade" data-shade="1" d="M684.1 350.3L681.6 351L681.6 348.5L684.1 347.8ZM681.6 351L679 351.4L679 348.9L681.6 348.5ZM679 351.4L676.2 351.5L676.2 349L679 348.9Z"/><path class="iso-shade" data-shade="2" d="M676.2 351.5L673.4 351.3L673.4 348.8L676.2 349ZM673.4 351.3L670.8 350.7L670.8 348.3L673.4 348.8Z"/><path class="iso-shade" data-shade="3" d="M670.8 350.7L668.5 350L668.5 347.5L670.8 348.3ZM668.5 350L666.6 348.9L666.6 346.5L668.5 347.5ZM666.6 348.9L665.2 347.7L665.2 345.2L666.6 346.5ZM665.2 347.7L664.4 346.4L664.4 343.9L665.2 345.2ZM664.4 346.4L664.2 345L664.2 342.5L664.4 343.9Z"/><path class="iso-top" d="M687.7 345.7L686.1 346.8L684.1 347.8L681.6 348.5L679 348.9L676.2 349L673.4 348.8L670.8 348.3L668.5 347.5L666.6 346.5L665.2 345.2L664.4 343.9L664.2 342.5L664.6 341.1L665.7 339.8L667.3 338.7L669.3 337.7L671.7 337.1L674.4 336.6L677.2 336.5L679.9 336.8L682.5 337.3L684.8 338.1L686.7 339.1L688.1 340.3L688.9 341.6L689.1 343L688.7 344.4Z"/><path class="iso-line iso-crease" data-tone="faint" d="M689.1 343L688.7 344.4L687.7 345.7L686.1 346.8L684.1 347.8L681.6 348.5L679 348.9L676.2 349L673.4 348.8L670.8 348.3L668.5 347.5L666.6 346.5L665.2 345.2L664.4 343.9L664.2 342.5"/><path class="iso-line iso-edge" data-tone="lo" d="M664.2 342.5L664.6 341.1L665.7 339.8L667.3 338.7L669.3 337.7L671.7 337.1L674.4 336.6L677.2 336.5L679.9 336.8L682.5 337.3L684.8 338.1L686.7 339.1L688.1 340.3L688.9 341.6L689.1 343M689.1 345.5L688.7 346.9L687.7 348.2L686.1 349.3L684.1 350.3L681.6 351L679 351.4L676.2 351.5L673.4 351.3L670.8 350.7L668.5 350L666.6 348.9L665.2 347.7L664.4 346.4L664.2 345M664.2 342.5L664.2 345M689.1 343L689.1 345.5"/></g><g class="iso-solid"><path class="iso-fill" d="M667.1 337.3L667.4 336.3L668.2 335.3L669.4 334.4L671 333.7L672.9 333.1L674.9 332.8L677.1 332.7L679.2 332.9L681.2 333.3L683 333.9L684.4 334.7L685.5 335.6L686.1 336.6L686.3 337.7L686.3 343L686 344L685.2 345L684 345.9L682.4 346.6L680.5 347.2L678.4 347.5L676.3 347.6L674.2 347.4L672.2 347L670.4 346.4L668.9 345.6L667.9 344.7L667.2 343.7L667.1 342.6Z"/><path class="iso-shade" data-shade="0" d="M685.2 345L684 345.9L684 340.7L685.2 339.8ZM684 345.9L682.4 346.6L682.4 341.4L684 340.7ZM686.3 343L686 344L686 338.8L686.3 337.7ZM686 344L685.2 345L685.2 339.8L686 338.8Z"/><path class="iso-shade" data-shade="1" d="M682.4 346.6L680.5 347.2L680.5 341.9L682.4 341.4ZM680.5 347.2L678.4 347.5L678.4 342.3L680.5 341.9ZM678.4 347.5L676.3 347.6L676.3 342.3L678.4 342.3Z"/><path class="iso-shade" data-shade="2" d="M676.3 347.6L674.2 347.4L674.2 342.2L676.3 342.3ZM674.2 347.4L672.2 347L672.2 341.8L674.2 342.2Z"/><path class="iso-shade" data-shade="3" d="M672.2 347L670.4 346.4L670.4 341.2L672.2 341.8ZM670.4 346.4L668.9 345.6L668.9 340.4L670.4 341.2ZM668.9 345.6L667.9 344.7L667.9 339.4L668.9 340.4ZM667.9 344.7L667.2 343.7L667.2 338.4L667.9 339.4ZM667.2 343.7L667.1 342.6L667.1 337.3L667.2 338.4Z"/><path class="iso-top" d="M685.2 339.8L684 340.7L682.4 341.4L680.5 341.9L678.4 342.3L676.3 342.3L674.2 342.2L672.2 341.8L670.4 341.2L668.9 340.4L667.9 339.4L667.2 338.4L667.1 337.3L667.4 336.3L668.2 335.3L669.4 334.4L671 333.7L672.9 333.1L674.9 332.8L677.1 332.7L679.2 332.9L681.2 333.3L683 333.9L684.4 334.7L685.5 335.6L686.1 336.6L686.3 337.7L686 338.8Z"/><path class="iso-line iso-crease" data-tone="faint" d="M686.3 337.7L686 338.8L685.2 339.8L684 340.7L682.4 341.4L680.5 341.9L678.4 342.3L676.3 342.3L674.2 342.2L672.2 341.8L670.4 341.2L668.9 340.4L667.9 339.4L667.2 338.4L667.1 337.3"/><path class="iso-line iso-edge" data-tone="mid" d="M667.1 337.3L667.4 336.3L668.2 335.3L669.4 334.4L671 333.7L672.9 333.1L674.9 332.8L677.1 332.7L679.2 332.9L681.2 333.3L683 333.9L684.4 334.7L685.5 335.6L686.1 336.6L686.3 337.7M686.3 343L686 344L685.2 345L684 345.9L682.4 346.6L680.5 347.2L678.4 347.5L676.3 347.6L674.2 347.4L672.2 347L670.4 346.4L668.9 345.6L667.9 344.7L667.2 343.7L667.1 342.6M667.1 337.3L667.1 342.6M686.3 337.7L686.3 343"/></g><g class="iso-solid"><path class="iso-fill" d="M25.7 162.5L26.3 161L27.5 159.5L159.6 35.3L161.3 34L163.6 32.9L166.2 32.1L169.1 31.4L172.1 31.1L175.3 31.1L178.4 31.4L181.3 32L825.9 203.4L828.5 204.3L830.7 205.4L832.4 206.7L833.7 208.1L834.3 209.7L834.3 211.2L834.3 229.7L833.7 231.3L832.5 232.7L700.4 356.9L698.7 358.2L696.4 359.4L693.8 360.2L690.9 360.8L687.9 361.2L684.7 361.2L681.6 360.9L678.7 360.3L34.1 188.9L31.5 188L29.3 186.9L27.6 185.6L26.3 184.2L25.7 182.6L25.7 181Z"/><path class="iso-shade" data-shade="0" d="M834.3 229.7L833.7 231.3L833.7 212.8L834.3 211.2ZM833.7 231.3L832.5 232.7L832.5 214.2L833.7 212.8ZM832.5 232.7L700.4 356.9L700.4 338.4L832.5 214.2ZM700.4 356.9L698.7 358.2L698.7 339.7L700.4 338.4ZM698.7 358.2L696.4 359.4L696.4 340.9L698.7 339.7ZM696.4 359.4L693.8 360.2L693.8 341.7L696.4 340.9Z"/><path class="iso-shade" data-shade="1" d="M693.8 360.2L690.9 360.8L690.9 342.3L693.8 341.7ZM690.9 360.8L687.9 361.2L687.9 342.6L690.9 342.3ZM687.9 361.2L684.7 361.2L684.7 342.7L687.9 342.6Z"/><path class="iso-shade" data-shade="2" d="M684.7 361.2L681.6 360.9L681.6 342.3L684.7 342.7ZM681.6 360.9L678.7 360.3L678.7 341.7L681.6 342.3ZM678.7 360.3L34.1 188.9L34.1 170.4L678.7 341.7Z"/><path class="iso-shade" data-shade="3" d="M34.1 188.9L31.5 188L31.5 169.5L34.1 170.4ZM31.5 188L29.3 186.9L29.3 168.4L31.5 169.5ZM29.3 186.9L27.6 185.6L27.6 167.1L29.3 168.4ZM27.6 185.6L26.3 184.2L26.3 165.7L27.6 167.1ZM26.3 184.2L25.7 182.6L25.7 164.1L26.3 165.7ZM25.7 182.6L25.7 181L25.7 162.5L25.7 164.1Z"/><path class="iso-top" d="M825.9 203.4L828.5 204.3L830.7 205.4L832.4 206.7L833.7 208.1L834.3 209.7L834.3 211.2L833.7 212.8L832.5 214.2L700.4 338.4L698.7 339.7L696.4 340.9L693.8 341.7L690.9 342.3L687.9 342.6L684.7 342.7L681.6 342.3L678.7 341.7L34.1 170.4L31.5 169.5L29.3 168.4L27.6 167.1L26.3 165.7L25.7 164.1L25.7 162.5L26.3 161L27.5 159.5L159.6 35.3L161.3 34L163.6 32.9L166.2 32.1L169.1 31.4L172.1 31.1L175.3 31.1L178.4 31.4L181.3 32Z"/><path class="iso-line iso-crease" data-tone="faint" d="M834.3 211.2L833.7 212.8L832.5 214.2L700.4 338.4L698.7 339.7L696.4 340.9L693.8 341.7L690.9 342.3L687.9 342.6L684.7 342.7L681.6 342.3L678.7 341.7L34.1 170.4L31.5 169.5L29.3 168.4L27.6 167.1L26.3 165.7L25.7 164.1L25.7 162.5"/><path class="iso-line iso-bevel" data-tone="faint" d="M834.3 211.2L830.9 212.4L829.9 213.6L698 337.7L696.5 338.8L694.6 339.8L692.5 340.5L690.1 341L687.6 341.2L685 341.2L682.5 341L679.9 340.5L35.6 169.2L33.3 168.4L31.5 167.5L30.1 166.4L29.1 165.2L28.6 164L25.7 162.5"/><path class="iso-line iso-edge" data-tone="mid" d="M25.7 162.5L26.3 161L27.5 159.5L159.6 35.3L161.3 34L163.6 32.9L166.2 32.1L169.1 31.4L172.1 31.1L175.3 31.1L178.4 31.4L181.3 32L825.9 203.4L828.5 204.3L830.7 205.4L832.4 206.7L833.7 208.1L834.3 209.7L834.3 211.2M834.3 229.7L833.7 231.3L832.5 232.7L700.4 356.9L698.7 358.2L696.4 359.4L693.8 360.2L690.9 360.8L687.9 361.2L684.7 361.2L681.6 360.9L678.7 360.3L34.1 188.9L31.5 188L29.3 186.9L27.6 185.6L26.3 184.2L25.7 182.6L25.7 181M834.3 211.2L834.3 229.7M25.7 162.5L25.7 181"/></g><path class="iso-line" data-tone="lo" d="M821.7 207.3L822.8 207.7L823.8 208.2L824.6 208.8L825.1 209.4L825.4 210.1L825.4 210.8L825.1 211.5L824.6 212.1L692.5 336.3L691.8 336.9L690.8 337.4L689.6 337.8L688.3 338.1L687 338.2L685.6 338.2L684.2 338.1L682.9 337.8L38.3 166.5L37.2 166.1L36.2 165.6L35.4 165L34.9 164.4L34.6 163.7L34.6 163L34.9 162.3L35.4 161.6L167.5 37.4L168.2 36.9L169.2 36.4L170.4 36L171.7 35.7L173 35.6L174.4 35.6L175.8 35.7L177.1 36Z"/><path class="iso-line" data-tone="lo" d="M177.9 41.2L177 41.8L175.6 42.2L174.1 42.3L172.6 42L171.5 41.6L170.7 40.9L170.6 40.1L171 39.4L172 38.8L173.3 38.4L174.9 38.4L176.3 38.6L177.5 39.1L178.2 39.7L178.4 40.5ZM819.4 211.8L818.4 212.4L817.1 212.7L815.5 212.8L814.1 212.6L812.9 212.1L812.2 211.4L812 210.7L812.5 209.9L813.4 209.3L814.8 209L816.3 208.9L817.8 209.1L818.9 209.6L819.7 210.3L819.8 211ZM47.5 163.9L46.6 164.5L45.2 164.8L43.7 164.9L42.2 164.7L41.1 164.2L40.3 163.5L40.2 162.8L40.6 162L41.6 161.4L42.9 161.1L44.5 161L45.9 161.2L47.1 161.7L47.8 162.4L48 163.1ZM689 334.4L688 335L686.7 335.3L685.1 335.4L683.7 335.2L682.5 334.7L681.8 334L681.6 333.3L682.1 332.6L683 332L684.4 331.6L685.9 331.5L687.4 331.7L688.5 332.2L689.3 332.9L689.4 333.7Z"/><g class="iso-dots" data-tone="mid"><circle cx="174.5" cy="40.3" r="0.5"/><circle cx="815.9" cy="210.8" r="0.5"/><circle cx="44.1" cy="162.9" r="0.5"/><circle cx="685.5" cy="333.5" r="0.5"/></g><g class="iso-solid"><path class="iso-fill" d="M139 71.5L139.4 70.9L152.8 58.3L153.6 57.7L154.9 57.4L156.2 57.3L157.6 57.5L575.8 168.7L576.8 169.2L577.5 169.8L577.6 170.5L577.6 172.9L577.2 173.6L563.9 186.2L563 186.7L561.8 187L560.4 187.1L559 186.9L140.8 75.7L139.8 75.3L139.1 74.7L139 74Z"/><path class="iso-shade" data-shade="0" d="M577.6 172.9L577.2 173.6L577.2 171.1L577.6 170.5ZM577.2 173.6L563.9 186.2L563.9 183.7L577.2 171.1ZM563.9 186.2L563 186.7L563 184.3L563.9 183.7Z"/><path class="iso-shade" data-shade="1" d="M563 186.7L561.8 187L561.8 184.6L563 184.3ZM561.8 187L560.4 187.1L560.4 184.6L561.8 184.6Z"/><path class="iso-shade" data-shade="2" d="M560.4 187.1L559 186.9L559 184.4L560.4 184.6ZM559 186.9L140.8 75.7L140.8 73.3L559 184.4Z"/><path class="iso-shade" data-shade="3" d="M140.8 75.7L139.8 75.3L139.8 72.8L140.8 73.3ZM139.8 75.3L139.1 74.7L139.1 72.2L139.8 72.8ZM139.1 74.7L139 74L139 71.5L139.1 72.2Z"/><path class="iso-top" d="M575.8 168.7L576.8 169.2L577.5 169.8L577.6 170.5L577.2 171.1L563.9 183.7L563 184.3L561.8 184.6L560.4 184.6L559 184.4L140.8 73.3L139.8 72.8L139.1 72.2L139 71.5L139.4 70.9L152.8 58.3L153.6 57.7L154.9 57.4L156.2 57.3L157.6 57.5Z"/><path class="iso-line iso-crease" data-tone="faint" d="M577.6 170.5L577.2 171.1L563.9 183.7L563 184.3L561.8 184.6L560.4 184.6L559 184.4L140.8 73.3L139.8 72.8L139.1 72.2L139 71.5"/><path class="iso-line iso-bevel" data-tone="faint" d="M577.6 170.5L576.6 171L563.3 183.5L562.5 184L561.5 184.2L560.4 184.3L559.3 184.1L141.2 73L140.3 72.6L139.8 72.1L139 71.5"/><path class="iso-line iso-edge" data-tone="mid" d="M139 71.5L139.4 70.9L152.8 58.3L153.6 57.7L154.9 57.4L156.2 57.3L157.6 57.5L575.8 168.7L576.8 169.2L577.5 169.8L577.6 170.5M577.6 172.9L577.2 173.6L563.9 186.2L563 186.7L561.8 187L560.4 187.1L559 186.9L140.8 75.7L139.8 75.3L139.1 74.7L139 74M577.6 170.5L577.6 172.9M139 71.5L139 74"/></g><path class="iso-line" data-tone="faint" d="M151.5 59.5L576 172.3"/><path class="iso-line" data-tone="faint" d="M140.6 69.7L565.1 182.5"/><path class="iso-line" data-tone="lo" d="M163.2 59.9L162.2 60.8M182.1 64.9L181 65.8M191.5 67.4L190.5 68.3M200.9 69.9L199.9 70.8M219.8 74.9L218.8 75.8M229.2 77.4L228.2 78.3M238.6 79.9L237.6 80.9M257.5 84.9L256.5 85.9M266.9 87.4L265.9 88.4M276.4 89.9L275.4 90.9M295.2 95L294.2 95.9M304.7 97.5L303.7 98.4M314.1 100L313.1 100.9M333 105L332 105.9M342.4 107.5L341.4 108.4M351.8 110L350.8 110.9M370.7 115L369.7 116M380.1 117.5L379.1 118.5M389.6 120L388.6 121M408.4 125.1L407.4 126M417.9 127.6L416.9 128.5M427.3 130.1L426.3 131M446.2 135.1L445.2 136M455.6 137.6L454.6 138.5M465 140.1L464 141M483.9 145.1L482.9 146.1M493.3 147.6L492.3 148.6M502.8 150.1L501.8 151.1M521.6 155.1L520.6 156.1M531.1 157.7L530.1 158.6M540.5 160.2L539.5 161.1M559.4 165.2L558.4 166.1M568.8 167.7L567.8 168.6"/><g class="iso-dots" data-tone="mid"><circle cx="150.2" cy="65.7" r="0.45"/><circle cx="566.5" cy="176.3" r="0.45"/></g><g class="iso-solid"><path class="iso-fill" d="M184.9 172.5L185.3 171.8L198.7 159.2L199.6 158.7L200.8 158.4L202.2 158.3L203.5 158.5L728.6 298.1L729.7 298.5L730.3 299.1L730.5 299.8L730.5 302.3L730.1 303L716.7 315.5L715.8 316.1L714.6 316.4L713.2 316.5L711.9 316.3L186.8 176.7L185.7 176.2L185 175.6L184.9 174.9Z"/><path class="iso-shade" data-shade="0" d="M730.5 302.3L730.1 303L730.1 300.5L730.5 299.8ZM730.1 303L716.7 315.5L716.7 313.1L730.1 300.5ZM716.7 315.5L715.8 316.1L715.8 313.6L716.7 313.1Z"/><path class="iso-shade" data-shade="1" d="M715.8 316.1L714.6 316.4L714.6 313.9L715.8 313.6ZM714.6 316.4L713.2 316.5L713.2 314L714.6 313.9Z"/><path class="iso-shade" data-shade="2" d="M713.2 316.5L711.9 316.3L711.9 313.8L713.2 314ZM711.9 316.3L186.8 176.7L186.8 174.2L711.9 313.8Z"/><path class="iso-shade" data-shade="3" d="M186.8 176.7L185.7 176.2L185.7 173.8L186.8 174.2ZM185.7 176.2L185 175.6L185 173.2L185.7 173.8ZM185 175.6L184.9 174.9L184.9 172.5L185 173.2Z"/><path class="iso-top" d="M728.6 298.1L729.7 298.5L730.3 299.1L730.5 299.8L730.1 300.5L716.7 313.1L715.8 313.6L714.6 313.9L713.2 314L711.9 313.8L186.8 174.2L185.7 173.8L185 173.2L184.9 172.5L185.3 171.8L198.7 159.2L199.6 158.7L200.8 158.4L202.2 158.3L203.5 158.5Z"/><path class="iso-line iso-crease" data-tone="faint" d="M730.5 299.8L730.1 300.5L716.7 313.1L715.8 313.6L714.6 313.9L713.2 314L711.9 313.8L186.8 174.2L185.7 173.8L185 173.2L184.9 172.5"/><path class="iso-line iso-bevel" data-tone="faint" d="M730.5 299.8L729.4 300.4L716.1 312.9L715.3 313.3L714.4 313.6L713.3 313.7L712.1 313.5L187.2 173.9L186.2 173.5L185.7 173.1L184.9 172.5"/><path class="iso-line iso-edge" data-tone="mid" d="M184.9 172.5L185.3 171.8L198.7 159.2L199.6 158.7L200.8 158.4L202.2 158.3L203.5 158.5L728.6 298.1L729.7 298.5L730.3 299.1L730.5 299.8M730.5 302.3L730.1 303L716.7 315.5L715.8 316.1L714.6 316.4L713.2 316.5L711.9 316.3L186.8 176.7L185.7 176.2L185 175.6L184.9 174.9M730.5 299.8L730.5 302.3M184.9 172.5L184.9 174.9"/></g><path class="iso-line" data-tone="faint" d="M197.4 160.4L728.8 301.7"/><path class="iso-line" data-tone="faint" d="M186.6 170.6L717.9 311.9"/><path class="iso-line" data-tone="lo" d="M221.7 164.1L220.7 165.1M231.1 166.6L230.1 167.6M240.6 169.1L239.5 170.1M259.4 174.2L258.4 175.1M268.8 176.7L267.8 177.6M278.3 179.2L277.3 180.1M297.1 184.2L296.1 185.1M306.6 186.7L305.6 187.6M316 189.2L315 190.2M334.9 194.2L333.9 195.2M344.3 196.7L343.3 197.7M353.7 199.2L352.7 200.2M372.6 204.3L371.6 205.2M382 206.8L381 207.7M391.5 209.3L390.5 210.2M410.3 214.3L409.3 215.2M419.8 216.8L418.8 217.7M429.2 219.3L428.2 220.2M448.1 224.3L447.1 225.3M457.5 226.8L456.5 227.8M466.9 229.3L465.9 230.3M485.8 234.4L484.8 235.3M495.2 236.9L494.2 237.8M504.7 239.4L503.7 240.3M523.5 244.4L522.5 245.3M533 246.9L532 247.8M542.4 249.4L541.4 250.3M561.3 254.4L560.3 255.4M570.7 256.9L569.7 257.9M580.1 259.4L579.1 260.4M599 264.4L598 265.4M608.4 267L607.4 267.9M617.9 269.5L616.9 270.4M636.7 274.5L635.7 275.4M646.2 277L645.2 277.9M655.6 279.5L654.6 280.4M674.5 284.5L673.5 285.4M683.9 287L682.9 288M693.3 289.5L692.3 290.5M712.2 294.5L711.2 295.5M721.6 297L720.6 298"/><g class="iso-dots" data-tone="mid"><circle cx="196.1" cy="166.6" r="0.45"/><circle cx="719.3" cy="305.7" r="0.45"/></g><g class="iso-solid"><path class="iso-fill" d="M173.6 112.2L174 111.6L189.1 97.4L190 96.9L191.2 96.5L192.6 96.5L193.9 96.7L234.8 107.5L235.9 108L236.5 108.6L236.7 109.3L236.7 110.5L236.3 111.2L221.2 125.3L220.3 125.9L219.1 126.2L217.7 126.3L216.4 126.1L175.5 115.2L174.4 114.8L173.8 114.2L173.6 113.5Z"/><path class="iso-shade" data-shade="0" d="M236.7 110.5L236.3 111.2L236.3 110L236.7 109.3ZM236.3 111.2L221.2 125.3L221.2 124.1L236.3 110ZM221.2 125.3L220.3 125.9L220.3 124.6L221.2 124.1Z"/><path class="iso-shade" data-shade="1" d="M220.3 125.9L219.1 126.2L219.1 125L220.3 124.6ZM219.1 126.2L217.7 126.3L217.7 125L219.1 125Z"/><path class="iso-shade" data-shade="2" d="M217.7 126.3L216.4 126.1L216.4 124.8L217.7 125ZM216.4 126.1L175.5 115.2L175.5 114L216.4 124.8Z"/><path class="iso-shade" data-shade="3" d="M175.5 115.2L174.4 114.8L174.4 113.5L175.5 114ZM174.4 114.8L173.8 114.2L173.8 112.9L174.4 113.5ZM173.8 114.2L173.6 113.5L173.6 112.2L173.8 112.9Z"/><path class="iso-top" d="M234.8 107.5L235.9 108L236.5 108.6L236.7 109.3L236.3 110L221.2 124.1L220.3 124.6L219.1 125L217.7 125L216.4 124.8L175.5 114L174.4 113.5L173.8 112.9L173.6 112.2L174 111.6L189.1 97.4L190 96.9L191.2 96.5L192.6 96.5L193.9 96.7Z"/><path class="iso-line iso-edge" data-tone="lo" d="M173.6 112.2L174 111.6L189.1 97.4L190 96.9L191.2 96.5L192.6 96.5L193.9 96.7L234.8 107.5L235.9 108L236.5 108.6L236.7 109.3M236.7 110.5L236.3 111.2L221.2 125.3L220.3 125.9L219.1 126.2L217.7 126.3L216.4 126.1L175.5 115.2L174.4 114.8L173.8 114.2L173.6 113.5M236.7 109.3L236.7 110.5M173.6 112.2L173.6 113.5"/></g><path class="iso-line" data-tone="faint" d="M233.1 109.1L218.1 123.3L177.2 112.4L192.2 98.2Z"/><g class="iso-solid"><path class="iso-fill" d="M159.5 171L159.9 170.3L180 151.5L180.9 150.9L182.1 150.6L183.5 150.5L184.8 150.7L232 163.3L233.1 163.7L233.7 164.3L233.9 165L233.9 166.2L233.5 166.9L213.4 185.8L212.5 186.3L211.3 186.6L209.9 186.7L208.6 186.5L161.4 174L160.3 173.5L159.7 172.9L159.5 172.2Z"/><path class="iso-shade" data-shade="0" d="M233.9 166.2L233.5 166.9L233.5 165.7L233.9 165ZM233.5 166.9L213.4 185.8L213.4 184.5L233.5 165.7ZM213.4 185.8L212.5 186.3L212.5 185.1L213.4 184.5Z"/><path class="iso-shade" data-shade="1" d="M212.5 186.3L211.3 186.6L211.3 185.4L212.5 185.1ZM211.3 186.6L209.9 186.7L209.9 185.5L211.3 185.4Z"/><path class="iso-shade" data-shade="2" d="M209.9 186.7L208.6 186.5L208.6 185.3L209.9 185.5ZM208.6 186.5L161.4 174L161.4 172.7L208.6 185.3Z"/><path class="iso-shade" data-shade="3" d="M161.4 174L160.3 173.5L160.3 172.3L161.4 172.7ZM160.3 173.5L159.7 172.9L159.7 171.7L160.3 172.3ZM159.7 172.9L159.5 172.2L159.5 171L159.7 171.7Z"/><path class="iso-top" d="M232 163.3L233.1 163.7L233.7 164.3L233.9 165L233.5 165.7L213.4 184.5L212.5 185.1L211.3 185.4L209.9 185.5L208.6 185.3L161.4 172.7L160.3 172.3L159.7 171.7L159.5 171L159.9 170.3L180 151.5L180.9 150.9L182.1 150.6L183.5 150.5L184.8 150.7Z"/><path class="iso-line iso-edge" data-tone="lo" d="M159.5 171L159.9 170.3L180 151.5L180.9 150.9L182.1 150.6L183.5 150.5L184.8 150.7L232 163.3L233.1 163.7L233.7 164.3L233.9 165M233.9 166.2L233.5 166.9L213.4 185.8L212.5 186.3L211.3 186.6L209.9 186.7L208.6 186.5L161.4 174L160.3 173.5L159.7 172.9L159.5 172.2M233.9 165L233.9 166.2M159.5 171L159.5 172.2"/></g><path class="iso-line" data-tone="faint" d="M230.3 164.8L210.3 183.7L163.1 171.2L183.2 152.3Z"/><g class="iso-solid"><path class="iso-fill" d="M406 147.2L406.4 146.5L426.5 127.6L427.4 127.1L428.6 126.8L430 126.7L431.3 126.9L487.9 142L489 142.4L489.7 143L489.8 143.7L489.8 145.6L489.4 146.2L469.3 165.1L468.4 165.6L467.2 165.9L465.8 166L464.5 165.8L407.9 150.8L406.8 150.3L406.2 149.7L406 149Z"/><path class="iso-shade" data-shade="0" d="M489.8 145.6L489.4 146.2L489.4 144.4L489.8 143.7ZM489.4 146.2L469.3 165.1L469.3 163.2L489.4 144.4ZM469.3 165.1L468.4 165.6L468.4 163.8L469.3 163.2Z"/><path class="iso-shade" data-shade="1" d="M468.4 165.6L467.2 165.9L467.2 164.1L468.4 163.8ZM467.2 165.9L465.8 166L465.8 164.2L467.2 164.1Z"/><path class="iso-shade" data-shade="2" d="M465.8 166L464.5 165.8L464.5 164L465.8 164.2ZM464.5 165.8L407.9 150.8L407.9 148.9L464.5 164Z"/><path class="iso-shade" data-shade="3" d="M407.9 150.8L406.8 150.3L406.8 148.5L407.9 148.9ZM406.8 150.3L406.2 149.7L406.2 147.9L406.8 148.5ZM406.2 149.7L406 149L406 147.2L406.2 147.9Z"/><path class="iso-top" d="M487.9 142L489 142.4L489.7 143L489.8 143.7L489.4 144.4L469.3 163.2L468.4 163.8L467.2 164.1L465.8 164.2L464.5 164L407.9 148.9L406.8 148.5L406.2 147.9L406 147.2L406.4 146.5L426.5 127.6L427.4 127.1L428.6 126.8L430 126.7L431.3 126.9Z"/><path class="iso-line iso-edge" data-tone="lo" d="M406 147.2L406.4 146.5L426.5 127.6L427.4 127.1L428.6 126.8L430 126.7L431.3 126.9L487.9 142L489 142.4L489.7 143L489.8 143.7M489.8 145.6L489.4 146.2L469.3 165.1L468.4 165.6L467.2 165.9L465.8 166L464.5 165.8L407.9 150.8L406.8 150.3L406.2 149.7L406 149M489.8 143.7L489.8 145.6M406 147.2L406 149"/></g><path class="iso-line" data-tone="faint" d="M486.2 143.5L466.2 162.4L409.6 147.3L429.6 128.5Z"/><g data-part="verifier"><g class="iso-solid"><path class="iso-fill" d="M521 131L521.4 130.3L533.1 119.3L534 118.8L535.2 118.4L536.6 118.4L537.9 118.6L600.8 135.3L601.9 135.7L602.6 136.3L602.7 137L602.7 149.4L602.3 150L590.6 161L589.7 161.6L588.5 161.9L587.1 162L585.8 161.8L522.9 145L521.8 144.6L521.2 144L521 143.3Z"/><path class="iso-shade" data-shade="0" d="M602.7 149.4L602.3 150L602.3 137.7L602.7 137ZM602.3 150L590.6 161L590.6 148.7L602.3 137.7ZM590.6 161L589.7 161.6L589.7 149.2L590.6 148.7Z"/><path class="iso-shade" data-shade="1" d="M589.7 161.6L588.5 161.9L588.5 149.6L589.7 149.2ZM588.5 161.9L587.1 162L587.1 149.6L588.5 149.6Z"/><path class="iso-shade" data-shade="2" d="M587.1 162L585.8 161.8L585.8 149.4L587.1 149.6ZM585.8 161.8L522.9 145L522.9 132.7L585.8 149.4Z"/><path class="iso-shade" data-shade="3" d="M522.9 145L521.8 144.6L521.8 132.3L522.9 132.7ZM521.8 144.6L521.2 144L521.2 131.7L521.8 132.3ZM521.2 144L521 143.3L521 131L521.2 131.7Z"/><path class="iso-top" d="M600.8 135.3L601.9 135.7L602.6 136.3L602.7 137L602.3 137.7L590.6 148.7L589.7 149.2L588.5 149.6L587.1 149.6L585.8 149.4L522.9 132.7L521.8 132.3L521.2 131.7L521 131L521.4 130.3L533.1 119.3L534 118.8L535.2 118.4L536.6 118.4L537.9 118.6Z"/><path class="iso-line iso-crease" data-tone="faint" d="M602.7 137L602.3 137.7L590.6 148.7L589.7 149.2L588.5 149.6L587.1 149.6L585.8 149.4L522.9 132.7L521.8 132.3L521.2 131.7L521 131"/><path class="iso-line iso-bevel" data-tone="faint" d="M602.7 137L601.3 137.5L589.7 148.4L589 148.8L588.2 149L587.2 149.1L586.2 148.9L523.5 132.3L522.7 131.9L522.2 131.5L521 131"/><path class="iso-line iso-edge" data-tone="mid" d="M521 131L521.4 130.3L533.1 119.3L534 118.8L535.2 118.4L536.6 118.4L537.9 118.6L600.8 135.3L601.9 135.7L602.6 136.3L602.7 137M602.7 149.4L602.3 150L590.6 161L589.7 161.6L588.5 161.9L587.1 162L585.8 161.8L522.9 145L521.8 144.6L521.2 144L521 143.3M602.7 137L602.7 149.4M521 131L521 143.3"/></g><path class="iso-line" data-tone="faint" d="M598.7 136.9L587.3 147.6L525.1 131.1L536.4 120.4Z"/><g class="iso-solid" data-lit=""><path class="iso-fill" d="M539.8 121.9L539.8 120.9L540.5 120L541.7 119.2L543.3 118.6L545.3 118.3L547.3 118.3L549.2 118.7L550.8 119.3L551.9 120.1L552.5 121L552.5 129.4L552.5 130.4L551.8 131.3L550.6 132.1L549 132.7L547 133L545 133L543.1 132.6L541.5 132L540.4 131.2L539.8 130.3Z"/><path class="iso-shade" data-shade="0" d="M551.8 131.3L550.6 132.1L550.6 123.8L551.8 123ZM550.6 132.1L549 132.7L549 124.4L550.6 123.8ZM552.5 129.4L552.5 130.4L552.5 122L552.5 121ZM552.5 130.4L551.8 131.3L551.8 123L552.5 122Z"/><path class="iso-shade" data-shade="1" d="M549 132.7L547 133L547 124.7L549 124.4Z"/><path class="iso-shade" data-shade="2" d="M547 133L545 133L545 124.6L547 124.7ZM545 133L543.1 132.6L543.1 124.3L545 124.6Z"/><path class="iso-shade" data-shade="3" d="M543.1 132.6L541.5 132L541.5 123.7L543.1 124.3ZM541.5 132L540.4 131.2L540.4 122.9L541.5 123.7ZM540.4 131.2L539.8 130.3L539.8 121.9L540.4 122.9Z"/><path class="iso-top" d="M551.8 123L550.6 123.8L549 124.4L547 124.7L545 124.6L543.1 124.3L541.5 123.7L540.4 122.9L539.8 121.9L539.8 120.9L540.5 120L541.7 119.2L543.3 118.6L545.3 118.3L547.3 118.3L549.2 118.7L550.8 119.3L551.9 120.1L552.5 121L552.5 122Z"/><path class="iso-line iso-crease" data-tone="faint" d="M552.5 121L552.5 122L551.8 123L550.6 123.8L549 124.4L547 124.7L545 124.6L543.1 124.3L541.5 123.7L540.4 122.9L539.8 121.9"/><path class="iso-line iso-edge" data-tone="hi" d="M539.8 121.9L539.8 120.9L540.5 120L541.7 119.2L543.3 118.6L545.3 118.3L547.3 118.3L549.2 118.7L550.8 119.3L551.9 120.1L552.5 121M552.5 129.4L552.5 130.4L551.8 131.3L550.6 132.1L549 132.7L547 133L545 133L543.1 132.6L541.5 132L540.4 131.2L539.8 130.3M539.8 121.9L539.8 130.3M552.5 121L552.5 129.4"/></g><path class="iso-line" data-tone="faint" d="M554.6 132.1L552.8 133.3L550.4 134.1L547.5 134.6L544.5 134.5L541.6 134.1L539.2 133.2L537.5 131.9L536.6 130.5L536.7 129L537.7 127.6L539.5 126.4L541.9 125.5L544.8 125.1L547.8 125.1L550.7 125.6L553.1 126.5L554.8 127.7L555.7 129.1L555.6 130.6Z"/><g class="iso-solid" data-lit=""><path class="iso-fill" d="M571.2 130.3L571.3 129.3L571.9 128.3L573.1 127.5L574.8 127L576.7 126.7L578.7 126.7L580.6 127L582.2 127.6L583.4 128.4L583.9 129.4L583.9 137.7L583.9 138.7L583.2 139.7L582 140.5L580.4 141.1L578.5 141.3L576.5 141.3L574.6 141L573 140.4L571.8 139.6L571.2 138.6Z"/><path class="iso-shade" data-shade="0" d="M583.2 139.7L582 140.5L582 132.1L583.2 131.3ZM582 140.5L580.4 141.1L580.4 132.7L582 132.1ZM583.9 137.7L583.9 138.7L583.9 130.4L583.9 129.4ZM583.9 138.7L583.2 139.7L583.2 131.3L583.9 130.4Z"/><path class="iso-shade" data-shade="1" d="M580.4 141.1L578.5 141.3L578.5 133L580.4 132.7Z"/><path class="iso-shade" data-shade="2" d="M578.5 141.3L576.5 141.3L576.5 133L578.5 133ZM576.5 141.3L574.6 141L574.6 132.7L576.5 133Z"/><path class="iso-shade" data-shade="3" d="M574.6 141L573 140.4L573 132.1L574.6 132.7ZM573 140.4L571.8 139.6L571.8 131.2L573 132.1ZM571.8 139.6L571.2 138.6L571.2 130.3L571.8 131.2Z"/><path class="iso-top" d="M583.2 131.3L582 132.1L580.4 132.7L578.5 133L576.5 133L574.6 132.7L573 132.1L571.8 131.2L571.2 130.3L571.3 129.3L571.9 128.3L573.1 127.5L574.8 127L576.7 126.7L578.7 126.7L580.6 127L582.2 127.6L583.4 128.4L583.9 129.4L583.9 130.4Z"/><path class="iso-line iso-crease" data-tone="faint" d="M583.9 129.4L583.9 130.4L583.2 131.3L582 132.1L580.4 132.7L578.5 133L576.5 133L574.6 132.7L573 132.1L571.8 131.2L571.2 130.3"/><path class="iso-line iso-edge" data-tone="hi" d="M571.2 130.3L571.3 129.3L571.9 128.3L573.1 127.5L574.8 127L576.7 126.7L578.7 126.7L580.6 127L582.2 127.6L583.4 128.4L583.9 129.4M583.9 137.7L583.9 138.7L583.2 139.7L582 140.5L580.4 141.1L578.5 141.3L576.5 141.3L574.6 141L573 140.4L571.8 139.6L571.2 138.6M571.2 130.3L571.2 138.6M583.9 129.4L583.9 137.7"/></g><path class="iso-line" data-tone="faint" d="M586.1 140.4L584.3 141.6L581.8 142.5L578.9 142.9L575.9 142.9L573.1 142.4L570.7 141.5L568.9 140.3L568.1 138.8L568.1 137.3L569.1 135.9L570.9 134.7L573.4 133.9L576.3 133.4L579.3 133.4L582.1 133.9L584.5 134.8L586.2 136.1L587.1 137.5L587.1 139Z"/><g class="iso-dots" data-tone="mid"><circle cx="536.6" cy="120.6" r="0.4"/><circle cx="598.2" cy="137" r="0.4"/><circle cx="525.5" cy="131" r="0.4"/><circle cx="587.2" cy="147.4" r="0.4"/></g></g><g class="iso-solid"><path class="iso-fill" d="M234 38.7L234.2 38.1L237.2 35.3L238 34.9L239.1 34.8L240.1 34.9L255.2 38.9L256 39.3L256.4 39.8L256.4 76.8L256.1 77.3L253.1 80.2L252.3 80.6L251.3 80.7L250.2 80.6L235.1 76.6L234.3 76.2L234 75.7Z"/><path class="iso-shade" data-shade="0" d="M256.4 76.8L256.1 77.3L256.1 40.3L256.4 39.8ZM256.1 77.3L253.1 80.2L253.1 43.2L256.1 40.3ZM253.1 80.2L252.3 80.6L252.3 43.6L253.1 43.2Z"/><path class="iso-shade" data-shade="1" d="M252.3 80.6L251.3 80.7L251.3 43.7L252.3 43.6Z"/><path class="iso-shade" data-shade="2" d="M251.3 80.7L250.2 80.6L250.2 43.6L251.3 43.7ZM250.2 80.6L235.1 76.6L235.1 39.6L250.2 43.6Z"/><path class="iso-shade" data-shade="3" d="M235.1 76.6L234.3 76.2L234.3 39.2L235.1 39.6ZM234.3 76.2L234 75.7L234 38.7L234.3 39.2Z"/><path class="iso-top" d="M255.2 38.9L256 39.3L256.4 39.8L256.1 40.3L253.1 43.2L252.3 43.6L251.3 43.7L250.2 43.6L235.1 39.6L234.3 39.2L234 38.7L234.2 38.1L237.2 35.3L238 34.9L239.1 34.8L240.1 34.9Z"/><path class="iso-line iso-crease" data-tone="faint" d="M256.4 39.8L256.1 40.3L253.1 43.2L252.3 43.6L251.3 43.7L250.2 43.6L235.1 39.6L234.3 39.2L234 38.7"/><path class="iso-line iso-bevel" data-tone="faint" d="M256.4 39.8L255.3 40.2L252.4 42.9L251.9 43.2L251.3 43.3L250.5 43.2L235.6 39.2L235.1 39L234 38.7"/><path class="iso-line iso-edge" data-tone="mid" d="M234 38.7L234.2 38.1L237.2 35.3L238 34.9L239.1 34.8L240.1 34.9L255.2 38.9L256 39.3L256.4 39.8M256.4 76.8L256.1 77.3L253.1 80.2L252.3 80.6L251.3 80.7L250.2 80.6L235.1 76.6L234.3 76.2L234 75.7M256.4 39.8L256.4 76.8M234 38.7L234 75.7"/></g><g class="iso-solid"><path class="iso-fill" d="M340.9 67.1L341.1 66.6L344.1 63.7L344.9 63.3L346 63.2L347 63.3L362.1 67.3L362.9 67.7L363.3 68.2L363.3 105.2L363 105.8L360 108.6L359.2 109L358.2 109.2L357.1 109L342 105L341.2 104.6L340.9 104.1Z"/><path class="iso-shade" data-shade="0" d="M363.3 105.2L363 105.8L363 68.8L363.3 68.2ZM363 105.8L360 108.6L360 71.6L363 68.8ZM360 108.6L359.2 109L359.2 72L360 71.6Z"/><path class="iso-shade" data-shade="1" d="M359.2 109L358.2 109.2L358.2 72.2L359.2 72Z"/><path class="iso-shade" data-shade="2" d="M358.2 109.2L357.1 109L357.1 72L358.2 72.2ZM357.1 109L342 105L342 68L357.1 72Z"/><path class="iso-shade" data-shade="3" d="M342 105L341.2 104.6L341.2 67.6L342 68ZM341.2 104.6L340.9 104.1L340.9 67.1L341.2 67.6Z"/><path class="iso-top" d="M362.1 67.3L362.9 67.7L363.3 68.2L363 68.8L360 71.6L359.2 72L358.2 72.2L357.1 72L342 68L341.2 67.6L340.9 67.1L341.1 66.6L344.1 63.7L344.9 63.3L346 63.2L347 63.3Z"/><path class="iso-line iso-crease" data-tone="faint" d="M363.3 68.2L363 68.8L360 71.6L359.2 72L358.2 72.2L357.1 72L342 68L341.2 67.6L340.9 67.1"/><path class="iso-line iso-bevel" data-tone="faint" d="M363.3 68.2L362.2 68.6L359.3 71.3L358.8 71.6L358.2 71.7L357.4 71.6L342.5 67.7L342 67.4L340.9 67.1"/><path class="iso-line iso-edge" data-tone="mid" d="M340.9 67.1L341.1 66.6L344.1 63.7L344.9 63.3L346 63.2L347 63.3L362.1 67.3L362.9 67.7L363.3 68.2M363.3 105.2L363 105.8L360 108.6L359.2 109L358.2 109.2L357.1 109L342 105L341.2 104.6L340.9 104.1M363.3 68.2L363.3 105.2M340.9 67.1L340.9 104.1"/></g><g data-part="raw"></g><g data-part="train"></g><g data-part="test"><g class="iso-solid" data-lit=""><path class="iso-fill" d="M433.3 145.9L433.5 145.5L444.1 135.6L444.6 135.3L445.3 135.1L446.2 135L447 135.2L461.4 139L462.1 139.3L462.5 139.6L462.5 140L462.5 141.9L462.3 142.3L451.8 152.2L451.2 152.5L450.5 152.7L449.7 152.8L448.9 152.6L434.4 148.8L433.8 148.5L433.4 148.2L433.3 147.8Z"/><path class="iso-shade" data-shade="0" d="M462.5 141.9L462.3 142.3L462.3 140.4L462.5 140ZM462.3 142.3L451.8 152.2L451.8 150.3L462.3 140.4ZM451.8 152.2L451.2 152.5L451.2 150.7L451.8 150.3Z"/><path class="iso-shade" data-shade="1" d="M451.2 152.5L450.5 152.7L450.5 150.9L451.2 150.7ZM450.5 152.7L449.7 152.8L449.7 150.9L450.5 150.9Z"/><path class="iso-shade" data-shade="2" d="M449.7 152.8L448.9 152.6L448.9 150.8L449.7 150.9ZM448.9 152.6L434.4 148.8L434.4 146.9L448.9 150.8Z"/><path class="iso-shade" data-shade="3" d="M434.4 148.8L433.8 148.5L433.8 146.7L434.4 146.9ZM433.8 148.5L433.4 148.2L433.4 146.3L433.8 146.7ZM433.4 148.2L433.3 147.8L433.3 145.9L433.4 146.3Z"/><path class="iso-top" d="M461.4 139L462.1 139.3L462.5 139.6L462.5 140L462.3 140.4L451.8 150.3L451.2 150.7L450.5 150.9L449.7 150.9L448.9 150.8L434.4 146.9L433.8 146.7L433.4 146.3L433.3 145.9L433.5 145.5L444.1 135.6L444.6 135.3L445.3 135.1L446.2 135L447 135.2Z"/><path class="iso-line iso-crease" data-tone="lo" d="M462.5 140L462.3 140.4L451.8 150.3L451.2 150.7L450.5 150.9L449.7 150.9L448.9 150.8L434.4 146.9L433.8 146.7L433.4 146.3L433.3 145.9"/><path class="iso-line iso-bevel" data-tone="lo" d="M462.5 140L461.8 140.3L451.3 150.2L450.9 150.5L450.3 150.6L449.7 150.6L449.1 150.5L434.7 146.7L434.2 146.5L433.9 146.2L433.3 145.9"/><path class="iso-line iso-edge" data-tone="hi" d="M433.3 145.9L433.5 145.5L444.1 135.6L444.6 135.3L445.3 135.1L446.2 135L447 135.2L461.4 139L462.1 139.3L462.5 139.6L462.5 140M462.5 141.9L462.3 142.3L451.8 152.2L451.2 152.5L450.5 152.7L449.7 152.8L448.9 152.6L434.4 148.8L433.8 148.5L433.4 148.2L433.3 147.8M462.5 140L462.5 141.9M433.3 145.9L433.3 147.8"/></g><path class="iso-line" data-tone="lo" data-free="" d="M445.8 138.5L455.2 141"/><path class="iso-line" data-tone="lo" data-free="" d="M442.7 141.5L448.9 143.1"/></g><g data-part="model"><g class="iso-solid" data-lit=""><path class="iso-fill" d="M445.8 136.4L446 136L449 133.1L449.6 132.8L450.5 132.7L451.4 132.8L473.4 138.6L474.1 138.9L474.3 139.4L474.3 142.5L474.1 142.9L471.1 145.8L470.5 146.1L469.6 146.2L468.7 146.1L446.7 140.3L446 140L445.8 139.5Z"/><path class="iso-shade" data-shade="0" d="M474.3 142.5L474.1 142.9L474.1 139.8L474.3 139.4ZM474.1 142.9L471.1 145.8L471.1 142.7L474.1 139.8ZM471.1 145.8L470.5 146.1L470.5 143L471.1 142.7Z"/><path class="iso-shade" data-shade="1" d="M470.5 146.1L469.6 146.2L469.6 143.1L470.5 143Z"/><path class="iso-shade" data-shade="2" d="M469.6 146.2L468.7 146.1L468.7 143L469.6 143.1ZM468.7 146.1L446.7 140.3L446.7 137.2L468.7 143Z"/><path class="iso-shade" data-shade="3" d="M446.7 140.3L446 140L446 136.9L446.7 137.2ZM446 140L445.8 139.5L445.8 136.4L446 136.9Z"/><path class="iso-top" d="M473.4 138.6L474.1 138.9L474.3 139.4L474.1 139.8L471.1 142.7L470.5 143L469.6 143.1L468.7 143L446.7 137.2L446 136.9L445.8 136.4L446 136L449 133.1L449.6 132.8L450.5 132.7L451.4 132.8Z"/><path class="iso-line iso-crease" data-tone="lo" d="M474.3 139.4L474.1 139.8L471.1 142.7L470.5 143L469.6 143.1L468.7 143L446.7 137.2L446 136.9L445.8 136.4"/><path class="iso-line iso-bevel" data-tone="lo" d="M474.3 139.4L473.6 139.7L470.7 142.5L470.2 142.8L469.6 142.9L468.9 142.8L447 137L446.5 136.7L445.8 136.4"/><path class="iso-line iso-edge" data-tone="hi" d="M445.8 136.4L446 136L449 133.1L449.6 132.8L450.5 132.7L451.4 132.8L473.4 138.6L474.1 138.9L474.3 139.4M474.3 142.5L474.1 142.9L471.1 145.8L470.5 146.1L469.6 146.2L468.7 146.1L446.7 140.3L446 140L445.8 139.5M474.3 139.4L474.3 142.5M445.8 136.4L445.8 139.5"/></g><g class="iso-solid" data-lit=""><path class="iso-fill" d="M439.9 141.9L440.1 141.5L443.1 138.7L443.8 138.3L444.6 138.2L445.5 138.3L467.5 144.1L468.2 144.4L468.5 144.9L468.5 148L468.3 148.4L465.3 151.3L464.6 151.6L463.8 151.7L462.9 151.6L440.9 145.8L440.2 145.5L439.9 145Z"/><path class="iso-shade" data-shade="0" d="M468.5 148L468.3 148.4L468.3 145.3L468.5 144.9ZM468.3 148.4L465.3 151.3L465.3 148.2L468.3 145.3ZM465.3 151.3L464.6 151.6L464.6 148.5L465.3 148.2Z"/><path class="iso-shade" data-shade="1" d="M464.6 151.6L463.8 151.7L463.8 148.6L464.6 148.5Z"/><path class="iso-shade" data-shade="2" d="M463.8 151.7L462.9 151.6L462.9 148.5L463.8 148.6ZM462.9 151.6L440.9 145.8L440.9 142.7L462.9 148.5Z"/><path class="iso-shade" data-shade="3" d="M440.9 145.8L440.2 145.5L440.2 142.4L440.9 142.7ZM440.2 145.5L439.9 145L439.9 141.9L440.2 142.4Z"/><path class="iso-top" d="M467.5 144.1L468.2 144.4L468.5 144.9L468.3 145.3L465.3 148.2L464.6 148.5L463.8 148.6L462.9 148.5L440.9 142.7L440.2 142.4L439.9 141.9L440.1 141.5L443.1 138.7L443.8 138.3L444.6 138.2L445.5 138.3Z"/><path class="iso-line iso-crease" data-tone="lo" d="M468.5 144.9L468.3 145.3L465.3 148.2L464.6 148.5L463.8 148.6L462.9 148.5L440.9 142.7L440.2 142.4L439.9 141.9"/><path class="iso-line iso-bevel" data-tone="lo" d="M468.5 144.9L467.8 145.2L464.8 148L464.4 148.3L463.7 148.4L463.1 148.3L441.2 142.5L440.6 142.2L439.9 141.9"/><path class="iso-line iso-edge" data-tone="hi" d="M439.9 141.9L440.1 141.5L443.1 138.7L443.8 138.3L444.6 138.2L445.5 138.3L467.5 144.1L468.2 144.4L468.5 144.9M468.5 148L468.3 148.4L465.3 151.3L464.6 151.6L463.8 151.7L462.9 151.6L440.9 145.8L440.2 145.5L439.9 145M468.5 144.9L468.5 148M439.9 141.9L439.9 145"/></g><g class="iso-solid" data-lit=""><path class="iso-fill" d="M434.1 147.4L434.3 147L437.3 144.2L437.9 143.8L438.8 143.7L439.7 143.8L461.7 149.6L462.4 150L462.6 150.4L462.6 153.5L462.4 153.9L459.4 156.8L458.8 157.1L457.9 157.2L457 157.1L435 151.3L434.3 151L434.1 150.5Z"/><path class="iso-shade" data-shade="0" d="M462.6 153.5L462.4 153.9L462.4 150.8L462.6 150.4ZM462.4 153.9L459.4 156.8L459.4 153.7L462.4 150.8ZM459.4 156.8L458.8 157.1L458.8 154L459.4 153.7Z"/><path class="iso-shade" data-shade="1" d="M458.8 157.1L457.9 157.2L457.9 154.1L458.8 154Z"/><path class="iso-shade" data-shade="2" d="M457.9 157.2L457 157.1L457 154L457.9 154.1ZM457 157.1L435 151.3L435 148.2L457 154Z"/><path class="iso-shade" data-shade="3" d="M435 151.3L434.3 151L434.3 147.9L435 148.2ZM434.3 151L434.1 150.5L434.1 147.4L434.3 147.9Z"/><path class="iso-top" d="M461.7 149.6L462.4 150L462.6 150.4L462.4 150.8L459.4 153.7L458.8 154L457.9 154.1L457 154L435 148.2L434.3 147.9L434.1 147.4L434.3 147L437.3 144.2L437.9 143.8L438.8 143.7L439.7 143.8Z"/><path class="iso-line iso-crease" data-tone="lo" d="M462.6 150.4L462.4 150.8L459.4 153.7L458.8 154L457.9 154.1L457 154L435 148.2L434.3 147.9L434.1 147.4"/><path class="iso-line iso-bevel" data-tone="lo" d="M462.6 150.4L461.9 150.7L459 153.5L458.5 153.8L457.9 153.9L457.2 153.8L435.3 148L434.8 147.7L434.1 147.4"/><path class="iso-line iso-edge" data-tone="hi" d="M434.1 147.4L434.3 147L437.3 144.2L437.9 143.8L438.8 143.7L439.7 143.8L461.7 149.6L462.4 150L462.6 150.4M462.6 153.5L462.4 153.9L459.4 156.8L458.8 157.1L457.9 157.2L457 157.1L435 151.3L434.3 151L434.1 150.5M462.6 150.4L462.6 153.5M434.1 147.4L434.1 150.5"/></g></g><g data-part="head" transform="translate(0 0)"><g class="iso-solid"><path class="iso-fill" d="M334 81.3L334 80.7L334.4 80.1L335.1 79.6L336.1 79.3L337.3 79.1L338.5 79.1L339.7 79.3L340.7 79.7L341.4 80.2L341.7 80.8L341.7 99.3L341.7 99.9L341.3 100.4L340.6 100.9L339.6 101.3L338.4 101.5L337.2 101.5L336 101.3L335 100.9L334.3 100.4L334 99.8Z"/><path class="iso-shade" data-shade="0" d="M341.3 100.4L340.6 100.9L340.6 82.4L341.3 81.9ZM340.6 100.9L339.6 101.3L339.6 82.8L340.6 82.4ZM341.7 99.3L341.7 99.9L341.7 81.4L341.7 80.8ZM341.7 99.9L341.3 100.4L341.3 81.9L341.7 81.4Z"/><path class="iso-shade" data-shade="1" d="M339.6 101.3L338.4 101.5L338.4 83L339.6 82.8Z"/><path class="iso-shade" data-shade="2" d="M338.4 101.5L337.2 101.5L337.2 83L338.4 83ZM337.2 101.5L336 101.3L336 82.8L337.2 83Z"/><path class="iso-shade" data-shade="3" d="M336 101.3L335 100.9L335 82.4L336 82.8ZM335 100.9L334.3 100.4L334.3 81.9L335 82.4ZM334.3 100.4L334 99.8L334 81.3L334.3 81.9Z"/><path class="iso-top" d="M341.3 81.9L340.6 82.4L339.6 82.8L338.4 83L337.2 83L336 82.8L335 82.4L334.3 81.9L334 81.3L334 80.7L334.4 80.1L335.1 79.6L336.1 79.3L337.3 79.1L338.5 79.1L339.7 79.3L340.7 79.7L341.4 80.2L341.7 80.8L341.7 81.4Z"/><path class="iso-line iso-edge" data-tone="mid" d="M334 81.3L334 80.7L334.4 80.1L335.1 79.6L336.1 79.3L337.3 79.1L338.5 79.1L339.7 79.3L340.7 79.7L341.4 80.2L341.7 80.8M341.7 99.3L341.7 99.9L341.3 100.4L340.6 100.9L339.6 101.3L338.4 101.5L337.2 101.5L336 101.3L335 100.9L334.3 100.4L334 99.8M334 81.3L334 99.8M341.7 80.8L341.7 99.3"/></g><g class="iso-solid" data-lit=""><path class="iso-fill" d="M326.3 99.3L326.7 98L327.6 96.8L329.1 95.7L331 94.9L333.3 94.2L335.7 93.8L338.3 93.7L340.9 93.9L343.3 94.4L345.4 95.2L347.2 96.1L348.5 97.2L349.2 98.5L349.4 99.8L349.4 109L349 110.3L348.1 111.5L346.6 112.6L344.7 113.4L342.5 114.1L340 114.5L337.4 114.6L334.8 114.4L332.4 113.9L330.3 113.2L328.5 112.2L327.2 111.1L326.5 109.8L326.3 108.5Z"/><path class="iso-shade" data-shade="0" d="M348.1 111.5L346.6 112.6L346.6 103.3L348.1 102.2ZM346.6 112.6L344.7 113.4L344.7 104.2L346.6 103.3ZM349.4 109L349 110.3L349 101L349.4 99.8ZM349 110.3L348.1 111.5L348.1 102.2L349 101Z"/><path class="iso-shade" data-shade="1" d="M344.7 113.4L342.5 114.1L342.5 104.8L344.7 104.2ZM342.5 114.1L340 114.5L340 105.2L342.5 104.8ZM340 114.5L337.4 114.6L337.4 105.3L340 105.2Z"/><path class="iso-shade" data-shade="2" d="M337.4 114.6L334.8 114.4L334.8 105.1L337.4 105.3ZM334.8 114.4L332.4 113.9L332.4 104.6L334.8 105.1Z"/><path class="iso-shade" data-shade="3" d="M332.4 113.9L330.3 113.2L330.3 103.9L332.4 104.6ZM330.3 113.2L328.5 112.2L328.5 103L330.3 103.9ZM328.5 112.2L327.2 111.1L327.2 101.8L328.5 103ZM327.2 111.1L326.5 109.8L326.5 100.6L327.2 101.8ZM326.5 109.8L326.3 108.5L326.3 99.3L326.5 100.6Z"/><path class="iso-top" d="M348.1 102.2L346.6 103.3L344.7 104.2L342.5 104.8L340 105.2L337.4 105.3L334.8 105.1L332.4 104.6L330.3 103.9L328.5 103L327.2 101.8L326.5 100.6L326.3 99.3L326.7 98L327.6 96.8L329.1 95.7L331 94.9L333.3 94.2L335.7 93.8L338.3 93.7L340.9 93.9L343.3 94.4L345.4 95.2L347.2 96.1L348.5 97.2L349.2 98.5L349.4 99.8L349 101Z"/><path class="iso-line iso-crease" data-tone="faint" d="M349.4 99.8L349 101L348.1 102.2L346.6 103.3L344.7 104.2L342.5 104.8L340 105.2L337.4 105.3L334.8 105.1L332.4 104.6L330.3 103.9L328.5 103L327.2 101.8L326.5 100.6L326.3 99.3"/><path class="iso-line iso-bevel" data-tone="faint" d="M349.4 99.8L348.2 100.9L347.3 102L345.9 103L344.2 103.8L342.1 104.4L339.8 104.8L337.4 104.9L335.1 104.7L332.8 104.2L330.9 103.6L329.3 102.7L328.1 101.7L327.4 100.5L326.3 99.3"/><path class="iso-line iso-edge" data-tone="hi" d="M326.3 99.3L326.7 98L327.6 96.8L329.1 95.7L331 94.9L333.3 94.2L335.7 93.8L338.3 93.7L340.9 93.9L343.3 94.4L345.4 95.2L347.2 96.1L348.5 97.2L349.2 98.5L349.4 99.8M349.4 109L349 110.3L348.1 111.5L346.6 112.6L344.7 113.4L342.5 114.1L340 114.5L337.4 114.6L334.8 114.4L332.4 113.9L330.3 113.2L328.5 112.2L327.2 111.1L326.5 109.8L326.3 108.5M326.3 99.3L326.3 108.5M349.4 99.8L349.4 109"/></g><path class="iso-line" data-tone="lo" d="M348.1 110.9L348.1 102.9M345.9 112.3L345.9 104.3M342.9 113.4L342.9 105.3M339.5 113.9L339.5 105.9M335.9 113.9L335.9 105.8M332.4 113.3L332.4 105.3M329.5 112.2L329.5 104.2M327.5 110.7L327.5 102.7M349.3 109.2L349.3 101.2"/></g><g class="iso-solid"><path class="iso-fill" d="M204.4 53.8L204.7 53.2L235.2 24.6L236 24.1L237.1 23.8L238.3 23.7L239.5 23.9L255.9 28.3L256.8 28.7L257.4 29.2L257.5 29.8L257.5 40.6L257.2 41.2L226.8 69.8L226 70.3L224.9 70.6L223.6 70.7L222.4 70.5L206.1 66.2L205.1 65.8L204.5 65.2L204.4 64.6Z"/><path class="iso-shade" data-shade="0" d="M257.5 40.6L257.2 41.2L257.2 30.4L257.5 29.8ZM257.2 41.2L226.8 69.8L226.8 59L257.2 30.4ZM226.8 69.8L226 70.3L226 59.5L226.8 59Z"/><path class="iso-shade" data-shade="1" d="M226 70.3L224.9 70.6L224.9 59.8L226 59.5ZM224.9 70.6L223.6 70.7L223.6 59.9L224.9 59.8Z"/><path class="iso-shade" data-shade="2" d="M223.6 70.7L222.4 70.5L222.4 59.7L223.6 59.9ZM222.4 70.5L206.1 66.2L206.1 55.4L222.4 59.7Z"/><path class="iso-shade" data-shade="3" d="M206.1 66.2L205.1 65.8L205.1 55L206.1 55.4ZM205.1 65.8L204.5 65.2L204.5 54.4L205.1 55ZM204.5 65.2L204.4 64.6L204.4 53.8L204.5 54.4Z"/><path class="iso-top" d="M255.9 28.3L256.8 28.7L257.4 29.2L257.5 29.8L257.2 30.4L226.8 59L226 59.5L224.9 59.8L223.6 59.9L222.4 59.7L206.1 55.4L205.1 55L204.5 54.4L204.4 53.8L204.7 53.2L235.2 24.6L236 24.1L237.1 23.8L238.3 23.7L239.5 23.9Z"/><path class="iso-line iso-crease" data-tone="faint" d="M257.5 29.8L257.2 30.4L226.8 59L226 59.5L224.9 59.8L223.6 59.9L222.4 59.7L206.1 55.4L205.1 55L204.5 54.4L204.4 53.8"/><path class="iso-line iso-bevel" data-tone="faint" d="M257.5 29.8L256.4 30.3L226 58.8L225.4 59.2L224.6 59.4L223.7 59.4L222.8 59.3L206.6 55L205.8 54.7L205.4 54.3L204.4 53.8"/><path class="iso-line iso-edge" data-tone="mid" d="M204.4 53.8L204.7 53.2L235.2 24.6L236 24.1L237.1 23.8L238.3 23.7L239.5 23.9L255.9 28.3L256.8 28.7L257.4 29.2L257.5 29.8M257.5 40.6L257.2 41.2L226.8 69.8L226 70.3L224.9 70.6L223.6 70.7L222.4 70.5L206.1 66.2L205.1 65.8L204.5 65.2L204.4 64.6M257.5 29.8L257.5 40.6M204.4 53.8L204.4 64.6"/></g><path class="iso-line" data-tone="faint" d="M253.9 29.7L223.8 58L208.1 53.9L238.1 25.6Z"/><text class="iso-face-text" data-tone="mid" transform="matrix(0.836 -0.786 1.572 0.418 221.772 53.483)" font-size="3" text-anchor="start">split</text><g class="iso-solid"><path class="iso-fill" d="M311.3 82.2L311.6 81.6L342.1 53L342.9 52.5L344 52.2L345.2 52.2L346.4 52.3L362.8 56.7L363.7 57.1L364.3 57.6L364.4 58.3L364.4 69L364.1 69.6L333.7 98.3L332.9 98.7L331.8 99L330.5 99.1L329.3 98.9L313 94.6L312 94.2L311.4 93.6L311.3 93Z"/><path class="iso-shade" data-shade="0" d="M364.4 69L364.1 69.6L364.1 58.8L364.4 58.3ZM364.1 69.6L333.7 98.3L333.7 87.5L364.1 58.8ZM333.7 98.3L332.9 98.7L332.9 87.9L333.7 87.5Z"/><path class="iso-shade" data-shade="1" d="M332.9 98.7L331.8 99L331.8 88.2L332.9 87.9ZM331.8 99L330.5 99.1L330.5 88.3L331.8 88.2Z"/><path class="iso-shade" data-shade="2" d="M330.5 99.1L329.3 98.9L329.3 88.1L330.5 88.3ZM329.3 98.9L313 94.6L313 83.8L329.3 88.1Z"/><path class="iso-shade" data-shade="3" d="M313 94.6L312 94.2L312 83.4L313 83.8ZM312 94.2L311.4 93.6L311.4 82.8L312 83.4ZM311.4 93.6L311.3 93L311.3 82.2L311.4 82.8Z"/><path class="iso-top" d="M362.8 56.7L363.7 57.1L364.3 57.6L364.4 58.3L364.1 58.8L333.7 87.5L332.9 87.9L331.8 88.2L330.5 88.3L329.3 88.1L313 83.8L312 83.4L311.4 82.8L311.3 82.2L311.6 81.6L342.1 53L342.9 52.5L344 52.2L345.2 52.2L346.4 52.3Z"/><path class="iso-line iso-crease" data-tone="faint" d="M364.4 58.3L364.1 58.8L333.7 87.5L332.9 87.9L331.8 88.2L330.5 88.3L329.3 88.1L313 83.8L312 83.4L311.4 82.8L311.3 82.2"/><path class="iso-line iso-bevel" data-tone="faint" d="M364.4 58.3L363.3 58.7L332.9 87.2L332.3 87.6L331.5 87.8L330.6 87.9L329.7 87.7L313.5 83.4L312.7 83.1L312.3 82.7L311.3 82.2"/><path class="iso-line iso-edge" data-tone="mid" d="M311.3 82.2L311.6 81.6L342.1 53L342.9 52.5L344 52.2L345.2 52.2L346.4 52.3L362.8 56.7L363.7 57.1L364.3 57.6L364.4 58.3M364.4 69L364.1 69.6L333.7 98.3L332.9 98.7L331.8 99L330.5 99.1L329.3 98.9L313 94.6L312 94.2L311.4 93.6L311.3 93M364.4 58.3L364.4 69M311.3 82.2L311.3 93"/></g><path class="iso-line" data-tone="faint" d="M360.8 58.2L330.7 86.5L315 82.3L345.1 54Z"/><text class="iso-face-text" data-tone="mid" transform="matrix(0.836 -0.786 1.572 0.418 328.677 81.904)" font-size="3" text-anchor="start">train</text><g class="iso-solid"><path class="iso-fill" d="M205.6 65.4L205.8 64.9L208.8 62L209.6 61.6L210.6 61.5L211.7 61.6L226.8 65.6L227.6 66L227.9 66.5L227.9 103.5L227.7 104.1L224.7 106.9L223.9 107.3L222.9 107.5L221.8 107.3L206.7 103.3L205.9 102.9L205.6 102.4Z"/><path class="iso-shade" data-shade="0" d="M227.9 103.5L227.7 104.1L227.7 67.1L227.9 66.5ZM227.7 104.1L224.7 106.9L224.7 69.9L227.7 67.1ZM224.7 106.9L223.9 107.3L223.9 70.3L224.7 69.9Z"/><path class="iso-shade" data-shade="1" d="M223.9 107.3L222.9 107.5L222.9 70.5L223.9 70.3Z"/><path class="iso-shade" data-shade="2" d="M222.9 107.5L221.8 107.3L221.8 70.3L222.9 70.5ZM221.8 107.3L206.7 103.3L206.7 66.3L221.8 70.3Z"/><path class="iso-shade" data-shade="3" d="M206.7 103.3L205.9 102.9L205.9 65.9L206.7 66.3ZM205.9 102.9L205.6 102.4L205.6 65.4L205.9 65.9Z"/><path class="iso-top" d="M226.8 65.6L227.6 66L227.9 66.5L227.7 67.1L224.7 69.9L223.9 70.3L222.9 70.5L221.8 70.3L206.7 66.3L205.9 65.9L205.6 65.4L205.8 64.9L208.8 62L209.6 61.6L210.6 61.5L211.7 61.6Z"/><path class="iso-line iso-crease" data-tone="faint" d="M227.9 66.5L227.7 67.1L224.7 69.9L223.9 70.3L222.9 70.5L221.8 70.3L206.7 66.3L205.9 65.9L205.6 65.4"/><path class="iso-line iso-bevel" data-tone="faint" d="M227.9 66.5L226.9 66.9L224 69.6L223.5 69.9L222.8 70L222.1 69.9L207.2 66L206.6 65.7L205.6 65.4"/><path class="iso-line iso-edge" data-tone="mid" d="M205.6 65.4L205.8 64.9L208.8 62L209.6 61.6L210.6 61.5L211.7 61.6L226.8 65.6L227.6 66L227.9 66.5M227.9 103.5L227.7 104.1L224.7 106.9L223.9 107.3L222.9 107.5L221.8 107.3L206.7 103.3L205.9 102.9L205.6 102.4M227.9 66.5L227.9 103.5M205.6 65.4L205.6 102.4"/></g><g class="iso-solid"><path class="iso-fill" d="M312.5 93.8L312.7 93.3L315.7 90.5L316.5 90.1L317.5 89.9L318.6 90L333.7 94L334.5 94.4L334.8 94.9L334.8 132L334.6 132.5L331.6 135.3L330.8 135.7L329.8 135.9L328.7 135.8L313.6 131.7L312.8 131.4L312.5 130.8Z"/><path class="iso-shade" data-shade="0" d="M334.8 132L334.6 132.5L334.6 95.5L334.8 94.9ZM334.6 132.5L331.6 135.3L331.6 98.3L334.6 95.5ZM331.6 135.3L330.8 135.7L330.8 98.7L331.6 98.3Z"/><path class="iso-shade" data-shade="1" d="M330.8 135.7L329.8 135.9L329.8 98.9L330.8 98.7Z"/><path class="iso-shade" data-shade="2" d="M329.8 135.9L328.7 135.8L328.7 98.8L329.8 98.9ZM328.7 135.8L313.6 131.7L313.6 94.7L328.7 98.8Z"/><path class="iso-shade" data-shade="3" d="M313.6 131.7L312.8 131.4L312.8 94.4L313.6 94.7ZM312.8 131.4L312.5 130.8L312.5 93.8L312.8 94.4Z"/><path class="iso-top" d="M333.7 94L334.5 94.4L334.8 94.9L334.6 95.5L331.6 98.3L330.8 98.7L329.8 98.9L328.7 98.8L313.6 94.7L312.8 94.4L312.5 93.8L312.7 93.3L315.7 90.5L316.5 90.1L317.5 89.9L318.6 90Z"/><path class="iso-line iso-crease" data-tone="faint" d="M334.8 94.9L334.6 95.5L331.6 98.3L330.8 98.7L329.8 98.9L328.7 98.8L313.6 94.7L312.8 94.4L312.5 93.8"/><path class="iso-line iso-bevel" data-tone="faint" d="M334.8 94.9L333.8 95.3L330.9 98.1L330.4 98.3L329.7 98.4L329 98.3L314.1 94.4L313.5 94.1L312.5 93.8"/><path class="iso-line iso-edge" data-tone="mid" d="M312.5 93.8L312.7 93.3L315.7 90.5L316.5 90.1L317.5 89.9L318.6 90L333.7 94L334.5 94.4L334.8 94.9M334.8 132L334.6 132.5L331.6 135.3L330.8 135.7L329.8 135.9L328.7 135.8L313.6 131.7L312.8 131.4L312.5 130.8M334.8 94.9L334.8 132M312.5 93.8L312.5 130.8"/></g><g class="iso-solid"><path class="iso-fill" d="M442 123.2L442 122.3L442.5 121.5L459.2 105.8L460.2 105.2L461.6 104.7L463.2 104.4L464.9 104.4L466.5 104.7L497.9 113.1L499.2 113.6L500.2 114.3L500.7 115.1L500.7 121.2L500.7 122.1L500.1 122.9L483.4 138.6L482.4 139.2L481 139.7L479.4 140L477.8 140L476.2 139.7L444.7 131.3L443.4 130.8L442.4 130.1L442 129.3Z"/><path class="iso-shade" data-shade="0" d="M500.7 121.2L500.7 122.1L500.7 115.9L500.7 115.1ZM500.7 122.1L500.1 122.9L500.1 116.7L500.7 115.9ZM500.1 122.9L483.4 138.6L483.4 132.4L500.1 116.7ZM483.4 138.6L482.4 139.2L482.4 133.1L483.4 132.4ZM482.4 139.2L481 139.7L481 133.6L482.4 133.1Z"/><path class="iso-shade" data-shade="1" d="M481 139.7L479.4 140L479.4 133.8L481 133.6Z"/><path class="iso-shade" data-shade="2" d="M479.4 140L477.8 140L477.8 133.8L479.4 133.8ZM477.8 140L476.2 139.7L476.2 133.5L477.8 133.8ZM476.2 139.7L444.7 131.3L444.7 125.2L476.2 133.5Z"/><path class="iso-shade" data-shade="3" d="M444.7 131.3L443.4 130.8L443.4 124.6L444.7 125.2ZM443.4 130.8L442.4 130.1L442.4 124L443.4 124.6ZM442.4 130.1L442 129.3L442 123.2L442.4 124Z"/><path class="iso-top" d="M497.9 113.1L499.2 113.6L500.2 114.3L500.7 115.1L500.7 115.9L500.1 116.7L483.4 132.4L482.4 133.1L481 133.6L479.4 133.8L477.8 133.8L476.2 133.5L444.7 125.2L443.4 124.6L442.4 124L442 123.2L442 122.3L442.5 121.5L459.2 105.8L460.2 105.2L461.6 104.7L463.2 104.4L464.9 104.4L466.5 104.7Z"/><path class="iso-line iso-crease" data-tone="faint" d="M500.7 115.1L500.7 115.9L500.1 116.7L483.4 132.4L482.4 133.1L481 133.6L479.4 133.8L477.8 133.8L476.2 133.5L444.7 125.2L443.4 124.6L442.4 124L442 123.2"/><path class="iso-line iso-bevel" data-tone="faint" d="M500.7 115.1L499.6 115.8L499.1 116.5L482.5 132.1L481.7 132.7L480.6 133.1L479.3 133.3L477.9 133.3L476.6 133L445.3 124.7L444.2 124.3L443.4 123.7L442 123.2"/><path class="iso-line iso-edge" data-tone="mid" d="M442 123.2L442 122.3L442.5 121.5L459.2 105.8L460.2 105.2L461.6 104.7L463.2 104.4L464.9 104.4L466.5 104.7L497.9 113.1L499.2 113.6L500.2 114.3L500.7 115.1M500.7 121.2L500.7 122.1L500.1 122.9L483.4 138.6L482.4 139.2L481 139.7L479.4 140L477.8 140L476.2 139.7L444.7 131.3L443.4 130.8L442.4 130.1L442 129.3M500.7 115.1L500.7 121.2M442 123.2L442 129.3"/></g><g class="iso-dots" data-tone="mid"><circle cx="464" cy="107.1" r="0.4"/><circle cx="495.4" cy="115.4" r="0.4"/><circle cx="447.2" cy="122.8" r="0.4"/><circle cx="478.7" cy="131.2" r="0.4"/></g><g class="iso-solid"><path class="iso-fill" d="M464.9 102.3L465.1 101.4L465.7 100.6L466.6 100L467.9 99.4L469.4 99.1L471.1 98.9L472.8 99L474.3 99.3L475.7 99.8L476.8 100.5L477.5 101.2L477.7 102L477.7 119L477.6 119.8L477 120.6L476 121.3L474.7 121.8L473.2 122.2L471.5 122.3L469.9 122.2L468.3 121.9L466.9 121.5L465.9 120.8L465.2 120L464.9 119.2Z"/><path class="iso-shade" data-shade="0" d="M477 120.6L476 121.3L476 104.3L477 103.7ZM476 121.3L474.7 121.8L474.7 104.9L476 104.3ZM477.7 119L477.6 119.8L477.6 102.9L477.7 102ZM477.6 119.8L477 120.6L477 103.7L477.6 102.9Z"/><path class="iso-shade" data-shade="1" d="M474.7 121.8L473.2 122.2L473.2 105.2L474.7 104.9ZM473.2 122.2L471.5 122.3L471.5 105.4L473.2 105.2Z"/><path class="iso-shade" data-shade="2" d="M471.5 122.3L469.9 122.2L469.9 105.3L471.5 105.4ZM469.9 122.2L468.3 121.9L468.3 105L469.9 105.3Z"/><path class="iso-shade" data-shade="3" d="M468.3 121.9L466.9 121.5L466.9 104.5L468.3 105ZM466.9 121.5L465.9 120.8L465.9 103.8L466.9 104.5ZM465.9 120.8L465.2 120L465.2 103.1L465.9 103.8ZM465.2 120L464.9 119.2L464.9 102.3L465.2 103.1Z"/><path class="iso-top" d="M477 103.7L476 104.3L474.7 104.9L473.2 105.2L471.5 105.4L469.9 105.3L468.3 105L466.9 104.5L465.9 103.8L465.2 103.1L464.9 102.3L465.1 101.4L465.7 100.6L466.6 100L467.9 99.4L469.4 99.1L471.1 98.9L472.8 99L474.3 99.3L475.7 99.8L476.8 100.5L477.5 101.2L477.7 102L477.6 102.9Z"/><path class="iso-line iso-edge" data-tone="mid" d="M464.9 102.3L465.1 101.4L465.7 100.6L466.6 100L467.9 99.4L469.4 99.1L471.1 98.9L472.8 99L474.3 99.3L475.7 99.8L476.8 100.5L477.5 101.2L477.7 102M477.7 119L477.6 119.8L477 120.6L476 121.3L474.7 121.8L473.2 122.2L471.5 122.3L469.9 122.2L468.3 121.9L466.9 121.5L465.9 120.8L465.2 120L464.9 119.2M464.9 102.3L464.9 119.2M477.7 102L477.7 119"/></g><g class="iso-solid"><path class="iso-fill" d="M442.8 91.9L443 90L443.6 88.2L444.6 86.4L446.2 84.7L448.1 83.1L450.5 81.6L453.2 80.4L456.2 79.3L459.5 78.4L463 77.7L466.6 77.3L470.3 77.1L474.1 77.2L477.7 77.5L481.3 78L484.7 78.8L487.9 79.8L490.8 80.9L493.3 82.3L495.5 83.8L497.2 85.4L498.6 87.2L499.4 89L499.8 90.9L499.8 101.7L499.7 103.5L499.1 105.4L498 107.1L496.5 108.8L494.5 110.4L492.2 111.9L489.4 113.1L486.4 114.2L483.1 115.1L479.7 115.8L476 116.2L472.3 116.4L468.6 116.3L464.9 116L461.3 115.5L457.9 114.7L454.8 113.7L451.9 112.6L449.3 111.2L447.2 109.7L445.4 108.1L444.1 106.3L443.2 104.5L442.8 102.6Z"/><path class="iso-shade" data-shade="0" d="M496.5 108.8L494.5 110.4L494.5 99.6L496.5 98ZM494.5 110.4L492.2 111.9L492.2 101.1L494.5 99.6ZM492.2 111.9L489.4 113.1L489.4 102.3L492.2 101.1ZM489.4 113.1L486.4 114.2L486.4 103.4L489.4 102.3ZM499.8 101.7L499.7 103.5L499.7 92.7L499.8 90.9ZM499.7 103.5L499.1 105.4L499.1 94.6L499.7 92.7ZM499.1 105.4L498 107.1L498 96.3L499.1 94.6ZM498 107.1L496.5 108.8L496.5 98L498 96.3Z"/><path class="iso-shade" data-shade="1" d="M486.4 114.2L483.1 115.1L483.1 104.3L486.4 103.4ZM483.1 115.1L479.7 115.8L479.7 105L483.1 104.3ZM479.7 115.8L476 116.2L476 105.4L479.7 105ZM476 116.2L472.3 116.4L472.3 105.6L476 105.4Z"/><path class="iso-shade" data-shade="2" d="M472.3 116.4L468.6 116.3L468.6 105.5L472.3 105.6ZM468.6 116.3L464.9 116L464.9 105.2L468.6 105.5ZM464.9 116L461.3 115.5L461.3 104.7L464.9 105.2ZM461.3 115.5L457.9 114.7L457.9 103.9L461.3 104.7Z"/><path class="iso-shade" data-shade="3" d="M457.9 114.7L454.8 113.7L454.8 103L457.9 103.9ZM454.8 113.7L451.9 112.6L451.9 101.8L454.8 103ZM451.9 112.6L449.3 111.2L449.3 100.4L451.9 101.8ZM449.3 111.2L447.2 109.7L447.2 98.9L449.3 100.4ZM447.2 109.7L445.4 108.1L445.4 97.3L447.2 98.9ZM445.4 108.1L444.1 106.3L444.1 95.5L445.4 97.3ZM444.1 106.3L443.2 104.5L443.2 93.7L444.1 95.5ZM443.2 104.5L442.8 102.6L442.8 91.9L443.2 93.7Z"/><path class="iso-top" d="M496.5 98L494.5 99.6L492.2 101.1L489.4 102.3L486.4 103.4L483.1 104.3L479.7 105L476 105.4L472.3 105.6L468.6 105.5L464.9 105.2L461.3 104.7L457.9 103.9L454.8 103L451.9 101.8L449.3 100.4L447.2 98.9L445.4 97.3L444.1 95.5L443.2 93.7L442.8 91.9L443 90L443.6 88.2L444.6 86.4L446.2 84.7L448.1 83.1L450.5 81.6L453.2 80.4L456.2 79.3L459.5 78.4L463 77.7L466.6 77.3L470.3 77.1L474.1 77.2L477.7 77.5L481.3 78L484.7 78.8L487.9 79.8L490.8 80.9L493.3 82.3L495.5 83.8L497.2 85.4L498.6 87.2L499.4 89L499.8 90.9L499.7 92.7L499.1 94.6L498 96.3Z"/><path class="iso-line iso-crease" data-tone="lo" d="M499.8 90.9L499.7 92.7L499.1 94.6L498 96.3L496.5 98L494.5 99.6L492.2 101.1L489.4 102.3L486.4 103.4L483.1 104.3L479.7 105L476 105.4L472.3 105.6L468.6 105.5L464.9 105.2L461.3 104.7L457.9 103.9L454.8 103L451.9 101.8L449.3 100.4L447.2 98.9L445.4 97.3L444.1 95.5L443.2 93.7L442.8 91.9"/><path class="iso-line iso-bevel" data-tone="lo" d="M499.8 90.9L498.4 92.7L497.9 94.4L496.8 96.1L495.4 97.8L493.5 99.3L491.2 100.6L488.6 101.9L485.8 102.9L482.6 103.8L479.3 104.4L475.8 104.8L472.3 105L468.7 104.9L465.2 104.6L461.8 104.1L458.5 103.4L455.5 102.4L452.7 101.3L450.3 100L448.2 98.6L446.5 97L445.3 95.3L444.5 93.6L442.8 91.9"/><path class="iso-line iso-edge" data-tone="hi" d="M442.8 91.9L443 90L443.6 88.2L444.6 86.4L446.2 84.7L448.1 83.1L450.5 81.6L453.2 80.4L456.2 79.3L459.5 78.4L463 77.7L466.6 77.3L470.3 77.1L474.1 77.2L477.7 77.5L481.3 78L484.7 78.8L487.9 79.8L490.8 80.9L493.3 82.3L495.5 83.8L497.2 85.4L498.6 87.2L499.4 89L499.8 90.9M499.8 101.7L499.7 103.5L499.1 105.4L498 107.1L496.5 108.8L494.5 110.4L492.2 111.9L489.4 113.1L486.4 114.2L483.1 115.1L479.7 115.8L476 116.2L472.3 116.4L468.6 116.3L464.9 116L461.3 115.5L457.9 114.7L454.8 113.7L451.9 112.6L449.3 111.2L447.2 109.7L445.4 108.1L444.1 106.3L443.2 104.5L442.8 102.6M442.8 91.9L442.8 102.6M499.8 90.9L499.8 101.7"/></g><path class="iso-line" data-tone="lo" d="M496.5 102.2L496.5 98.5M494.9 103.5L494.9 99.8M493.1 104.7L493.1 101M491.1 105.8L491.1 102.1M488.9 106.7L488.9 103M486.4 107.6L486.4 103.9M483.8 108.3L483.8 104.6M481.1 108.9L481.1 105.2M478.2 109.3L478.2 105.6M475.3 109.6L475.3 105.9M472.3 109.8L472.3 106.1M469.3 109.7L469.3 106M466.4 109.5L466.4 105.8M463.5 109.2L463.5 105.5M460.6 108.7L460.6 105M457.9 108.1L457.9 104.4M455.4 107.3L455.4 103.6M453 106.4L453 102.7M450.8 105.4L450.8 101.7M448.9 104.3L448.9 100.6M447.2 103.1L447.2 99.4M445.7 101.8L445.7 98.1M444.5 100.4L444.5 96.7M443.7 99L443.7 95.3M499.4 98L499.4 94.3M498.7 99.4L498.7 95.7M497.7 100.9L497.7 97.2"/><path class="iso-line" data-tone="lo" d="M493.3 97.2L491.6 98.6L489.6 99.9L487.2 101L484.5 101.9L481.7 102.7L478.6 103.3L475.4 103.6L472.2 103.8L468.9 103.8L465.7 103.5L462.6 103L459.6 102.4L456.8 101.5L454.3 100.5L452.1 99.3L450.2 98L448.6 96.5L447.5 95L446.7 93.4L446.4 91.8L446.5 90.2L447 88.6L448 87L449.3 85.5L451 84.1L453.1 82.9L455.5 81.7L458.1 80.8L461 80L464 79.4L467.2 79.1L470.5 78.9L473.7 78.9L476.9 79.2L480.1 79.7L483 80.4L485.8 81.2L488.3 82.2L490.6 83.4L492.5 84.8L494 86.2L495.2 87.7L495.9 89.3L496.2 90.9L496.1 92.6L495.6 94.2L494.7 95.7Z"/><path class="iso-line" data-tone="lo" d="M449.9 93.3L447.8 93.5M449.6 92L447.5 92.1M449.6 90.7L447.5 90.7M449.9 89.5L447.8 89.3M451.4 87L449.4 86.6M452.6 85.9L450.7 85.3M454 84.8L452.3 84.2M455.6 83.8L454.1 83.1M459.6 82.2L458.4 81.3M461.8 81.6L460.9 80.6M464.2 81.1L463.5 80.1M466.6 80.8L466.2 79.7M471.7 80.5L471.7 79.4M474.3 80.6L474.5 79.5M476.8 80.8L477.3 79.8M479.2 81.2L480 80.2M483.7 82.4L484.9 81.6M485.7 83.2L487.1 82.4M487.5 84.1L489.1 83.4M489.1 85.1L490.9 84.5M491.5 87.4L493.5 87M492.3 88.6L494.4 88.3M492.8 89.8L494.9 89.7M493 91.1L495.2 91.1M492.5 93.7L494.6 93.9M491.9 94.9L493.9 95.2M490.9 96.1L492.8 96.5M489.6 97.2L491.4 97.8M486.4 99.2L487.9 99.9M484.5 100L485.8 100.9M482.3 100.7L483.4 101.6M480.1 101.3L480.9 102.3"/><path class="iso-line" data-tone="mid" d="M452.8 94.2L448.5 94.8M452.7 88.6L448.5 87.9M459 83.9L456.1 82.2M469.4 81.7L468.9 79.5M480.4 82.8L482.5 80.8M488.4 86.8L492.3 85.7M490.6 92.3L495.1 92.5M486.4 97.5L489.8 98.9M477 100.6L478.3 102.8"/><path class="iso-line" data-tone="mid" d="M473.7 92L473 92.4L472.1 92.6L471.1 92.7L470.1 92.5L469.3 92.2L468.8 91.7L468.7 91.2L469 90.7L469.6 90.3L470.5 90.1L471.6 90L472.6 90.2L473.4 90.5L473.9 91L474 91.5Z"/><text class="iso-face-text" data-tone="mid" transform="matrix(1.572 0.418 -0.836 0.786 464.299 97.959)" font-size="2.6" text-anchor="middle">metrics</text><path data-part="needle" class="iso-line" data-tone="lit" data-free="start" d="M468.8 93.4L481.4 81.6" style="stroke-width:1"/><g data-part="folder"></g><path class="iso-halo" d="M219.5 158.6L219.7 158.1L220.1 157.6L248.5 130.9L249.1 130.4L249.9 130.1L250.7 129.8L251.7 129.6L252.7 129.5L253.8 129.5L254.8 129.6L255.8 129.8L302.9 142.3L303.8 142.6L304.5 143L305.1 143.4L305.5 143.9L305.7 144.4L305.7 144.9L305.7 181.9L305.5 182.5L305.1 182.9L276.7 209.7L276.1 210.1L275.4 210.5L274.5 210.8L273.6 211L272.5 211.1L271.5 211.1L270.5 211L269.5 210.8L222.3 198.2L221.5 197.9L220.7 197.6L220.1 197.1L219.7 196.7L219.5 196.1L219.5 195.6Z" style="filter:blur(4px)"/><g class="iso-solid"><path class="iso-fill" d="M219.5 183.9L219.6 183.1L220.1 182.3L248.5 155.6L249.5 154.9L250.9 154.4L252.5 154.2L254.2 154.2L255.8 154.5L302.9 167L304.3 167.5L305.2 168.2L305.7 169L305.7 181.3L305.7 182.1L305.1 182.9L276.7 209.7L275.7 210.3L274.3 210.8L272.7 211.1L271.1 211L269.5 210.8L222.3 198.2L221 197.7L220 197L219.5 196.2Z"/><path class="iso-shade" data-shade="0" d="M305.7 181.3L305.7 182.1L305.7 169.8L305.7 169ZM305.7 182.1L305.1 182.9L305.1 170.6L305.7 169.8ZM305.1 182.9L276.7 209.7L276.7 197.3L305.1 170.6ZM276.7 209.7L275.7 210.3L275.7 198L276.7 197.3ZM275.7 210.3L274.3 210.8L274.3 198.5L275.7 198Z"/><path class="iso-shade" data-shade="1" d="M274.3 210.8L272.7 211.1L272.7 198.7L274.3 198.5Z"/><path class="iso-shade" data-shade="2" d="M272.7 211.1L271.1 211L271.1 198.7L272.7 198.7ZM271.1 211L269.5 210.8L269.5 198.4L271.1 198.7ZM269.5 210.8L222.3 198.2L222.3 185.9L269.5 198.4Z"/><path class="iso-shade" data-shade="3" d="M222.3 198.2L221 197.7L221 185.4L222.3 185.9ZM221 197.7L220 197L220 184.7L221 185.4ZM220 197L219.5 196.2L219.5 183.9L220 184.7Z"/><path class="iso-top" d="M302.9 167L304.3 167.5L305.2 168.2L305.7 169L305.7 169.8L305.1 170.6L276.7 197.3L275.7 198L274.3 198.5L272.7 198.7L271.1 198.7L269.5 198.4L222.3 185.9L221 185.4L220 184.7L219.5 183.9L219.6 183.1L220.1 182.3L248.5 155.6L249.5 154.9L250.9 154.4L252.5 154.2L254.2 154.2L255.8 154.5Z"/><path class="iso-line iso-crease" data-tone="faint" d="M305.7 169L305.7 169.8L305.1 170.6L276.7 197.3L275.7 198L274.3 198.5L272.7 198.7L271.1 198.7L269.5 198.4L222.3 185.9L221 185.4L220 184.7L219.5 183.9"/><path class="iso-line iso-bevel" data-tone="faint" d="M305.7 169L304.6 169.7L304.2 170.4L275.8 197L275 197.6L273.9 198L272.6 198.2L271.3 198.2L269.9 197.9L222.9 185.4L221.8 185L221 184.5L219.5 183.9"/><path class="iso-line iso-edge" data-tone="mid" d="M219.5 183.9L219.6 183.1L220.1 182.3L248.5 155.6L249.5 154.9L250.9 154.4L252.5 154.2L254.2 154.2L255.8 154.5L302.9 167L304.3 167.5L305.2 168.2L305.7 169M305.7 181.3L305.7 182.1L305.1 182.9L276.7 209.7L275.7 210.3L274.3 210.8L272.7 211.1L271.1 211L269.5 210.8L222.3 198.2L221 197.7L220 197L219.5 196.2M305.7 169L305.7 181.3M219.5 183.9L219.5 196.2"/></g><g class="iso-dots" data-tone="hi"><circle cx="245.9" cy="198.3" r="0.8"/></g><g class="iso-solid"><path class="iso-fill" d="M219.5 171.6L219.6 170.7L220.1 169.9L248.5 143.2L249.5 142.6L250.9 142.1L252.5 141.8L254.2 141.8L255.8 142.1L302.9 154.7L304.3 155.2L305.2 155.8L305.7 156.6L305.7 169L305.7 169.8L305.1 170.6L276.7 197.3L275.7 198L274.3 198.5L272.7 198.7L271.1 198.7L269.5 198.4L222.3 185.9L221 185.4L220 184.7L219.5 183.9Z"/><path class="iso-shade" data-shade="0" d="M305.7 169L305.7 169.8L305.7 157.5L305.7 156.6ZM305.7 169.8L305.1 170.6L305.1 158.3L305.7 157.5ZM305.1 170.6L276.7 197.3L276.7 185L305.1 158.3ZM276.7 197.3L275.7 198L275.7 185.7L276.7 185ZM275.7 198L274.3 198.5L274.3 186.1L275.7 185.7Z"/><path class="iso-shade" data-shade="1" d="M274.3 198.5L272.7 198.7L272.7 186.4L274.3 186.1Z"/><path class="iso-shade" data-shade="2" d="M272.7 198.7L271.1 198.7L271.1 186.4L272.7 186.4ZM271.1 198.7L269.5 198.4L269.5 186.1L271.1 186.4ZM269.5 198.4L222.3 185.9L222.3 173.6L269.5 186.1Z"/><path class="iso-shade" data-shade="3" d="M222.3 185.9L221 185.4L221 173.1L222.3 173.6ZM221 185.4L220 184.7L220 172.4L221 173.1ZM220 184.7L219.5 183.9L219.5 171.6L220 172.4Z"/><path class="iso-top" d="M302.9 154.7L304.3 155.2L305.2 155.8L305.7 156.6L305.7 157.5L305.1 158.3L276.7 185L275.7 185.7L274.3 186.1L272.7 186.4L271.1 186.4L269.5 186.1L222.3 173.6L221 173.1L220 172.4L219.5 171.6L219.6 170.7L220.1 169.9L248.5 143.2L249.5 142.6L250.9 142.1L252.5 141.8L254.2 141.8L255.8 142.1Z"/><path class="iso-line iso-crease" data-tone="faint" d="M305.7 156.6L305.7 157.5L305.1 158.3L276.7 185L275.7 185.7L274.3 186.1L272.7 186.4L271.1 186.4L269.5 186.1L222.3 173.6L221 173.1L220 172.4L219.5 171.6"/><path class="iso-line iso-bevel" data-tone="faint" d="M305.7 156.6L304.6 157.4L304.2 158.1L275.8 184.7L275 185.3L273.9 185.7L272.6 185.9L271.3 185.8L269.9 185.6L222.9 173.1L221.8 172.7L221 172.1L219.5 171.6"/><path class="iso-line iso-edge" data-tone="mid" d="M219.5 171.6L219.6 170.7L220.1 169.9L248.5 143.2L249.5 142.6L250.9 142.1L252.5 141.8L254.2 141.8L255.8 142.1L302.9 154.7L304.3 155.2L305.2 155.8L305.7 156.6M305.7 169L305.7 169.8L305.1 170.6L276.7 197.3L275.7 198L274.3 198.5L272.7 198.7L271.1 198.7L269.5 198.4L222.3 185.9L221 185.4L220 184.7L219.5 183.9M305.7 156.6L305.7 169M219.5 171.6L219.5 183.9"/></g><g class="iso-dots" data-tone="hi"><circle cx="245.9" cy="186" r="0.8"/></g><g class="iso-solid"><path class="iso-fill" d="M219.5 159.2L219.6 158.4L220.1 157.6L248.5 130.9L249.5 130.2L250.9 129.7L252.5 129.5L254.2 129.5L255.8 129.8L302.9 142.3L304.3 142.8L305.2 143.5L305.7 144.3L305.7 156.6L305.7 157.5L305.1 158.3L276.7 185L275.7 185.7L274.3 186.1L272.7 186.4L271.1 186.4L269.5 186.1L222.3 173.6L221 173.1L220 172.4L219.5 171.6Z"/><path class="iso-shade" data-shade="0" d="M305.7 156.6L305.7 157.5L305.7 145.1L305.7 144.3ZM305.7 157.5L305.1 158.3L305.1 145.9L305.7 145.1ZM305.1 158.3L276.7 185L276.7 172.7L305.1 145.9ZM276.7 185L275.7 185.7L275.7 173.3L276.7 172.7ZM275.7 185.7L274.3 186.1L274.3 173.8L275.7 173.3Z"/><path class="iso-shade" data-shade="1" d="M274.3 186.1L272.7 186.4L272.7 174L274.3 173.8Z"/><path class="iso-shade" data-shade="2" d="M272.7 186.4L271.1 186.4L271.1 174L272.7 174ZM271.1 186.4L269.5 186.1L269.5 173.8L271.1 174ZM269.5 186.1L222.3 173.6L222.3 161.2L269.5 173.8Z"/><path class="iso-shade" data-shade="3" d="M222.3 173.6L221 173.1L221 160.7L222.3 161.2ZM221 173.1L220 172.4L220 160L221 160.7ZM220 172.4L219.5 171.6L219.5 159.2L220 160Z"/><path class="iso-top" d="M302.9 142.3L304.3 142.8L305.2 143.5L305.7 144.3L305.7 145.1L305.1 145.9L276.7 172.7L275.7 173.3L274.3 173.8L272.7 174L271.1 174L269.5 173.8L222.3 161.2L221 160.7L220 160L219.5 159.2L219.6 158.4L220.1 157.6L248.5 130.9L249.5 130.2L250.9 129.7L252.5 129.5L254.2 129.5L255.8 129.8Z"/><path class="iso-line iso-crease" data-tone="faint" d="M305.7 144.3L305.7 145.1L305.1 145.9L276.7 172.7L275.7 173.3L274.3 173.8L272.7 174L271.1 174L269.5 173.8L222.3 161.2L221 160.7L220 160L219.5 159.2"/><path class="iso-line iso-bevel" data-tone="faint" d="M305.7 144.3L304.6 145L304.2 145.7L275.8 172.4L275 172.9L273.9 173.3L272.6 173.5L271.3 173.5L269.9 173.3L222.9 160.8L221.8 160.3L221 159.8L219.5 159.2"/><path class="iso-line iso-edge" data-tone="mid" d="M219.5 159.2L219.6 158.4L220.1 157.6L248.5 130.9L249.5 130.2L250.9 129.7L252.5 129.5L254.2 129.5L255.8 129.8L302.9 142.3L304.3 142.8L305.2 143.5L305.7 144.3M305.7 156.6L305.7 157.5L305.1 158.3L276.7 185L275.7 185.7L274.3 186.1L272.7 186.4L271.1 186.4L269.5 186.1L222.3 173.6L221 173.1L220 172.4L219.5 171.6M305.7 144.3L305.7 156.6M219.5 159.2L219.5 171.6"/></g><g class="iso-dots" data-tone="hi"><circle cx="245.9" cy="173.7" r="0.8"/></g><path class="iso-line" data-tone="faint" d="M300.9 144.2L301.2 144.3L301.4 144.5L301.5 144.7L301.4 144.9L272.9 171.7L272.7 171.8L272.3 171.9L271.9 171.9L271.5 171.9L224.3 159.3L224 159.2L223.8 159L223.8 158.8L223.9 158.6L252.3 131.9L252.6 131.7L252.9 131.6L253.4 131.6L253.8 131.7Z"/><text class="iso-face-text" data-tone="mid" transform="matrix(1.572 0.418 -0.836 0.786 226.304 158.246)" font-size="3.6" text-anchor="start">registry</text><g class="iso-dots" data-tone="mid"><circle cx="253" cy="131.7" r="0.4"/><circle cx="301.4" cy="144.5" r="0.4"/><circle cx="223.9" cy="159" r="0.4"/><circle cx="272.3" cy="171.9" r="0.4"/></g><g data-part="endpoint"><path class="iso-halo" d="M534 239.1L534.2 238.6L534.6 238.1L566.3 208.2L566.9 207.8L567.6 207.4L568.5 207.1L569.5 206.9L570.5 206.8L571.5 206.8L572.6 206.9L573.5 207.1L642.7 225.5L643.6 225.8L644.3 226.2L644.9 226.6L645.3 227.1L645.5 227.6L645.5 228.1L645.5 268.2L645.3 268.8L644.9 269.2L613.2 299.1L612.6 299.5L611.8 299.9L611 300.2L610 300.4L609 300.5L607.9 300.5L606.9 300.4L605.9 300.2L536.8 281.8L535.9 281.5L535.1 281.2L534.6 280.7L534.2 280.2L534 279.7L534 279.2Z" style="filter:blur(4px)"/><g class="iso-solid"><path class="iso-fill" d="M534 239.7L534 238.9L534.6 238.1L566.3 208.2L567.3 207.6L568.7 207.1L570.3 206.9L572 206.9L573.5 207.1L642.7 225.5L644 226L645 226.7L645.5 227.5L645.5 267.6L645.5 268.4L644.9 269.2L613.2 299.1L612.2 299.8L610.8 300.3L609.2 300.5L607.5 300.5L605.9 300.2L536.8 281.8L535.4 281.3L534.5 280.6L534 279.8Z"/><path class="iso-shade" data-shade="0" d="M645.5 267.6L645.5 268.4L645.5 228.4L645.5 227.5ZM645.5 268.4L644.9 269.2L644.9 229.1L645.5 228.4ZM644.9 269.2L613.2 299.1L613.2 259L644.9 229.1ZM613.2 299.1L612.2 299.8L612.2 259.7L613.2 259ZM612.2 299.8L610.8 300.3L610.8 260.2L612.2 259.7Z"/><path class="iso-shade" data-shade="1" d="M610.8 300.3L609.2 300.5L609.2 260.4L610.8 260.2Z"/><path class="iso-shade" data-shade="2" d="M609.2 300.5L607.5 300.5L607.5 260.4L609.2 260.4ZM607.5 300.5L605.9 300.2L605.9 260.1L607.5 260.4ZM605.9 300.2L536.8 281.8L536.8 241.7L605.9 260.1Z"/><path class="iso-shade" data-shade="3" d="M536.8 281.8L535.4 281.3L535.4 241.2L536.8 241.7ZM535.4 281.3L534.5 280.6L534.5 240.5L535.4 241.2ZM534.5 280.6L534 279.8L534 239.7L534.5 240.5Z"/><path class="iso-top" d="M642.7 225.5L644 226L645 226.7L645.5 227.5L645.5 228.4L644.9 229.1L613.2 259L612.2 259.7L610.8 260.2L609.2 260.4L607.5 260.4L605.9 260.1L536.8 241.7L535.4 241.2L534.5 240.5L534 239.7L534 238.9L534.6 238.1L566.3 208.2L567.3 207.6L568.7 207.1L570.3 206.9L572 206.9L573.5 207.1Z"/><path class="iso-line iso-crease" data-tone="faint" d="M645.5 227.5L645.5 228.4L644.9 229.1L613.2 259L612.2 259.7L610.8 260.2L609.2 260.4L607.5 260.4L605.9 260.1L536.8 241.7L535.4 241.2L534.5 240.5L534 239.7"/><path class="iso-line iso-bevel" data-tone="faint" d="M645.5 227.5L644.2 228.2L643.8 228.9L612.1 258.7L611.3 259.2L610.2 259.6L609 259.8L607.7 259.8L606.4 259.6L537.4 241.2L536.3 240.8L535.6 240.3L534 239.7"/><path class="iso-line iso-edge" data-tone="mid" d="M534 239.7L534 238.9L534.6 238.1L566.3 208.2L567.3 207.6L568.7 207.1L570.3 206.9L572 206.9L573.5 207.1L642.7 225.5L644 226L645 226.7L645.5 227.5M645.5 267.6L645.5 268.4L644.9 269.2L613.2 299.1L612.2 299.8L610.8 300.3L609.2 300.5L607.5 300.5L605.9 300.2L536.8 281.8L535.4 281.3L534.5 280.6L534 279.8M645.5 227.5L645.5 267.6M534 239.7L534 279.8"/></g><path class="iso-line" data-tone="faint" d="M640.2 227.9L608.4 257.8L539.3 239.4L571 209.5Z"/><text class="iso-face-text" data-tone="mid" transform="matrix(1.572 0.418 -0.836 0.786 566.654 217.413)" font-size="4.4" text-anchor="start">score.py</text><g class="iso-solid" data-lit=""><path class="iso-fill" d="M597.7 247L597.7 246L598.4 245L599.6 244.2L601.2 243.6L603.1 243.4L605.1 243.4L607 243.7L608.6 244.3L609.8 245.1L610.4 246.1L610.4 250.1L610.3 251.1L609.7 252L608.5 252.8L606.8 253.4L604.9 253.7L602.9 253.7L601 253.4L599.4 252.8L598.3 251.9L597.7 251Z"/><path class="iso-shade" data-shade="0" d="M609.7 252L608.5 252.8L608.5 248.8L609.7 248ZM608.5 252.8L606.8 253.4L606.8 249.4L608.5 248.8ZM610.4 250.1L610.3 251.1L610.3 247.1L610.4 246.1ZM610.3 251.1L609.7 252L609.7 248L610.3 247.1Z"/><path class="iso-shade" data-shade="1" d="M606.8 253.4L604.9 253.7L604.9 249.7L606.8 249.4Z"/><path class="iso-shade" data-shade="2" d="M604.9 253.7L602.9 253.7L602.9 249.7L604.9 249.7ZM602.9 253.7L601 253.4L601 249.4L602.9 249.7Z"/><path class="iso-shade" data-shade="3" d="M601 253.4L599.4 252.8L599.4 248.8L601 249.4ZM599.4 252.8L598.3 251.9L598.3 247.9L599.4 248.8ZM598.3 251.9L597.7 251L597.7 247L598.3 247.9Z"/><path class="iso-top" d="M609.7 248L608.5 248.8L606.8 249.4L604.9 249.7L602.9 249.7L601 249.4L599.4 248.8L598.3 247.9L597.7 247L597.7 246L598.4 245L599.6 244.2L601.2 243.6L603.1 243.4L605.1 243.4L607 243.7L608.6 244.3L609.8 245.1L610.4 246.1L610.3 247.1Z"/><path class="iso-line iso-crease" data-tone="faint" d="M610.4 246.1L610.3 247.1L609.7 248L608.5 248.8L606.8 249.4L604.9 249.7L602.9 249.7L601 249.4L599.4 248.8L598.3 247.9L597.7 247"/><path class="iso-line iso-edge" data-tone="hi" d="M597.7 247L597.7 246L598.4 245L599.6 244.2L601.2 243.6L603.1 243.4L605.1 243.4L607 243.7L608.6 244.3L609.8 245.1L610.4 246.1M610.4 250.1L610.3 251.1L609.7 252L608.5 252.8L606.8 253.4L604.9 253.7L602.9 253.7L601 253.4L599.4 252.8L598.3 251.9L597.7 251M597.7 247L597.7 251M610.4 246.1L610.4 250.1"/></g><path class="iso-line" data-tone="faint" d="M612.8 252.9L611 254.1L608.4 255L605.4 255.5L602.3 255.4L599.3 254.9L596.9 254L595.1 252.7L594.2 251.2L594.2 249.7L595.2 248.2L597.1 247L599.7 246.1L602.6 245.6L605.8 245.6L608.7 246.1L611.2 247.1L613 248.4L613.9 249.8L613.8 251.4Z"/><g class="iso-dots" data-tone="mid"><circle cx="571" cy="209.5" r="0.4"/><circle cx="640.2" cy="227.9" r="0.4"/><circle cx="539.3" cy="239.4" r="0.4"/><circle cx="608.4" cy="257.8" r="0.4"/></g></g><g class="iso-solid"><path class="iso-fill" d="M524.6 294.3L525 293.6L536.7 282.6L537.5 282L538.8 281.7L540.1 281.6L541.5 281.8L601.2 297.7L602.3 298.2L603 298.8L603.1 299.5L603.1 300.7L602.7 301.4L591 312.4L590.1 312.9L588.9 313.2L587.5 313.3L586.2 313.1L526.4 297.2L525.4 296.8L524.7 296.2L524.6 295.5Z"/><path class="iso-shade" data-shade="0" d="M603.1 300.7L602.7 301.4L602.7 300.1L603.1 299.5ZM602.7 301.4L591 312.4L591 311.1L602.7 300.1ZM591 312.4L590.1 312.9L590.1 311.7L591 311.1Z"/><path class="iso-shade" data-shade="1" d="M590.1 312.9L588.9 313.2L588.9 312L590.1 311.7ZM588.9 313.2L587.5 313.3L587.5 312.1L588.9 312Z"/><path class="iso-shade" data-shade="2" d="M587.5 313.3L586.2 313.1L586.2 311.9L587.5 312.1ZM586.2 313.1L526.4 297.2L526.4 296L586.2 311.9Z"/><path class="iso-shade" data-shade="3" d="M526.4 297.2L525.4 296.8L525.4 295.6L526.4 296ZM525.4 296.8L524.7 296.2L524.7 294.9L525.4 295.6ZM524.7 296.2L524.6 295.5L524.6 294.3L524.7 294.9Z"/><path class="iso-top" d="M601.2 297.7L602.3 298.2L603 298.8L603.1 299.5L602.7 300.1L591 311.1L590.1 311.7L588.9 312L587.5 312.1L586.2 311.9L526.4 296L525.4 295.6L524.7 294.9L524.6 294.3L525 293.6L536.7 282.6L537.5 282L538.8 281.7L540.1 281.6L541.5 281.8Z"/><path class="iso-line iso-edge" data-tone="lo" d="M524.6 294.3L525 293.6L536.7 282.6L537.5 282L538.8 281.7L540.1 281.6L541.5 281.8L601.2 297.7L602.3 298.2L603 298.8L603.1 299.5M603.1 300.7L602.7 301.4L591 312.4L590.1 312.9L588.9 313.2L587.5 313.3L586.2 313.1L526.4 297.2L525.4 296.8L524.7 296.2L524.6 295.5M603.1 299.5L603.1 300.7M524.6 294.3L524.6 295.5"/></g><path class="iso-line" data-tone="faint" d="M599.5 299.3L587.8 310.3L528.1 294.4L539.8 283.4Z"/><g data-part="request"></g><g data-part="response"><g class="iso-solid" data-lit=""><path class="iso-fill" d="M538.6 296.1L538.9 295.7L549.4 285.8L549.9 285.5L550.7 285.3L551.5 285.3L552.3 285.4L586.2 294.4L586.9 294.7L587.3 295L587.4 295.5L587.4 297.3L587.1 297.7L576.6 307.6L576.1 307.9L575.3 308.1L574.5 308.2L573.7 308.1L539.7 299L539.1 298.8L538.7 298.4L538.6 298Z"/><path class="iso-shade" data-shade="0" d="M587.4 297.3L587.1 297.7L587.1 295.9L587.4 295.5ZM587.1 297.7L576.6 307.6L576.6 305.8L587.1 295.9ZM576.6 307.6L576.1 307.9L576.1 306.1L576.6 305.8Z"/><path class="iso-shade" data-shade="1" d="M576.1 307.9L575.3 308.1L575.3 306.3L576.1 306.1ZM575.3 308.1L574.5 308.2L574.5 306.3L575.3 306.3Z"/><path class="iso-shade" data-shade="2" d="M574.5 308.2L573.7 308.1L573.7 306.2L574.5 306.3ZM573.7 308.1L539.7 299L539.7 297.2L573.7 306.2Z"/><path class="iso-shade" data-shade="3" d="M539.7 299L539.1 298.8L539.1 296.9L539.7 297.2ZM539.1 298.8L538.7 298.4L538.7 296.5L539.1 296.9ZM538.7 298.4L538.6 298L538.6 296.1L538.7 296.5Z"/><path class="iso-top" d="M586.2 294.4L586.9 294.7L587.3 295L587.4 295.5L587.1 295.9L576.6 305.8L576.1 306.1L575.3 306.3L574.5 306.3L573.7 306.2L539.7 297.2L539.1 296.9L538.7 296.5L538.6 296.1L538.9 295.7L549.4 285.8L549.9 285.5L550.7 285.3L551.5 285.3L552.3 285.4Z"/><path class="iso-line iso-crease" data-tone="lo" d="M587.4 295.5L587.1 295.9L576.6 305.8L576.1 306.1L575.3 306.3L574.5 306.3L573.7 306.2L539.7 297.2L539.1 296.9L538.7 296.5L538.6 296.1"/><path class="iso-line iso-bevel" data-tone="lo" d="M587.4 295.5L586.6 295.8L576.1 305.6L575.7 305.9L575.2 306L574.5 306.1L573.9 306L540 297L539.5 296.7L539.2 296.5L538.6 296.1"/><path class="iso-line iso-edge" data-tone="hi" d="M538.6 296.1L538.9 295.7L549.4 285.8L549.9 285.5L550.7 285.3L551.5 285.3L552.3 285.4L586.2 294.4L586.9 294.7L587.3 295L587.4 295.5M587.4 297.3L587.1 297.7L576.6 307.6L576.1 307.9L575.3 308.1L574.5 308.2L573.7 308.1L539.7 299L539.1 298.8L538.7 298.4L538.6 298M587.4 295.5L587.4 297.3M538.6 296.1L538.6 298"/></g><path class="iso-line" data-tone="lo" data-free="" d="M551.2 288.7L578 295.9"/><path class="iso-line" data-tone="lo" data-free="" d="M548 291.7L559.9 294.9"/></g></svg></div></div><figcaption class="iso-legend"><span class="iso-keys"><span class="iso-key"><svg class="iso-swatch" data-mark="lit" viewBox="0 0 16 10" aria-hidden="true"><path d="M2 4.5 8 1.5 14 4.5 14 6 8 9 2 6Z"/><path class="iso-swatch-crease" d="M2 4.5 8 7.5 14 4.5"/></svg>Slips and model files in motion, lamps, the dial needle</span><span class="iso-key"><svg class="iso-swatch" data-mark="raised" viewBox="0 0 16 10" aria-hidden="true"><path d="M2 4.5 8 1.5 14 4.5 14 6 8 9 2 6Z"/><path class="iso-swatch-crease" d="M2 4.5 8 7.5 14 4.5"/></svg>Back row: the four pipeline steps. Front row: register, deploy, score</span></span><span class="iso-caption">Back row, the pipeline run in Azure ML: a CSV is cleaned and split 80/20, a Random Forest (100 trees, depth 10) is trained, scored on the held-out 20%, and the register step checks that model.pkl and scaler.pkl exist. Front row, the deploy command: the local trained_model folder is registered, a managed endpoint loads it once with init(), and run() answers each JSON request. The dial position and the slip contents are illustrative; no real metric is shown.</span></figcaption></figure></main><script type="module">const AZIMUTH = 45;
+const ELEVATION = 30;
+const SHADES = 4;
+const RADIANS = Math.PI / 180;
+const UNIT = Math.sqrt(1.6);
+function cameraOf({ scale, azimuth = AZIMUTH, elevation = ELEVATION }) {
+    const a = azimuth * RADIANS;
+    const e = elevation * RADIANS;
+    return { sinA: Math.sin(a), cosA: Math.cos(a), sinE: Math.sin(e), cosE: Math.cos(e), k: scale * UNIT };
+}
+function iso([x, y, z], projection) {
+    const { origin } = projection;
+    const { sinA, cosA, sinE, cosE, k } = cameraOf(projection);
+    return [origin[0] + (x * sinA - y * cosA) * k, origin[1] + ((x * cosA + y * sinA) * sinE - z * cosE) * k];
+}
+function towardViewer(projection) {
+    const { sinA, cosA } = cameraOf(projection);
+    return [cosA, sinA];
+}
+function depthOf([x, y, z], projection) {
+    const { sinA, cosA, sinE, cosE } = cameraOf(projection);
+    return (x * cosA + y * sinA) * cosE + z * sinE;
+}
+const tenth = (value) => {
+    const text = (Math.round(value * 10) / 10).toFixed(1).replace(/\.0$/, "");
+    return text === "-0" ? "0" : text;
+};
+function pathOf(points, closed = false) {
+    if (!points.length)
+        return "";
+    return points.map(([x, y], at) => `${at ? "L" : "M"}${tenth(x)} ${tenth(y)}`).join("") + (closed ? "Z" : "");
+}
+const joinPaths = (paths) => paths.filter(Boolean).join("");
+function roundedPlan({ x, y, w, d, r }, steps = 8) {
+    const radius = Math.max(0, Math.min(r, w / 2, d / 2));
+    const corners = [
+        [x + w - radius, y + radius, -90],
+        [x + w - radius, y + d - radius, 0],
+        [x + radius, y + d - radius, 90],
+        [x + radius, y + radius, 180],
+    ];
+    const out = [];
+    for (const [cx, cy, start] of corners) {
+        const count = radius > 0 ? steps : 0;
+        for (let step = 0; step <= count; step++) {
+            const angle = (start + (count ? (90 * step) / count : 45)) * RADIANS;
+            out.push([cx + radius * Math.cos(angle), cy + radius * Math.sin(angle)]);
+        }
+    }
+    return out;
+}
+function signedArea(points) {
+    let area = 0;
+    for (let index = 0; index < points.length; index++) {
+        const [ax, ay] = points[index];
+        const [bx, by] = points[(index + 1) % points.length];
+        area += ax * by - bx * ay;
+    }
+    return area / 2;
+}
+const oriented = (points) => (signedArea(points) < 0 ? [...points].reverse() : points);
+function convexHull(points) {
+    const sorted = [...points].sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+    if (sorted.length < 3)
+        return sorted;
+    const cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+    const lower = [];
+    for (const point of sorted) {
+        while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], point) <= 0)
+            lower.pop();
+        lower.push(point);
+    }
+    const upper = [];
+    for (let index = sorted.length - 1; index >= 0; index--) {
+        const point = sorted[index];
+        while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], point) <= 0)
+            upper.pop();
+        upper.push(point);
+    }
+    return [...lower.slice(0, -1), ...upper.slice(0, -1)];
+}
+function runsOf(flags, want) {
+    const count = flags.length;
+    const runs = [];
+    const start = flags.findIndex((flag, index) => flag !== flags[(index + count - 1) % count]);
+    if (start < 0)
+        return flags[0] === want ? [Array.from({ length: count + 1 }, (_, index) => index % count)] : [];
+    let run = null;
+    for (let step = 0; step < count; step++) {
+        const index = (start + step) % count;
+        if (flags[index] === want) {
+            if (!run)
+                run = [index];
+            run.push((index + 1) % count);
+        }
+        else if (run) {
+            runs.push(run);
+            run = null;
+        }
+    }
+    if (run)
+        runs.push(run);
+    return runs;
+}
+function extrude(ring, z, height, projection, options = {}) {
+    const convex = options.convex ?? true;
+    const count = ring.length;
+    const counter = signedArea(ring) > 0;
+    const [vx, vy] = towardViewer(projection);
+    const { sinA, cosA } = cameraOf(projection);
+    const normals = ring.map(([ax, ay], index) => {
+        const [bx, by] = ring[(index + 1) % count];
+        const dx = bx - ax;
+        const dy = by - ay;
+        const length = Math.hypot(dx, dy) || 1;
+        return (counter ? [dy / length, -dx / length] : [-dy / length, dx / length]);
+    });
+    const facing = normals.map(([nx, ny]) => nx * vx + ny * vy > 1e-9);
+    const top = ring.map(([x, y]) => iso([x, y, z + height], projection));
+    const bottom = ring.map(([x, y]) => iso([x, y, z], projection));
+    const outline = [];
+    const crease = [];
+    for (const run of runsOf(facing, false))
+        outline.push(pathOf(run.map((index) => top[index])));
+    for (const run of runsOf(facing, true)) {
+        crease.push(pathOf(run.map((index) => top[index])));
+        if (height > 0)
+            outline.push(pathOf(run.map((index) => bottom[index])));
+    }
+    if (height > 0) {
+        for (let index = 0; index < count; index++) {
+            if (facing[(index + count - 1) % count] !== facing[index])
+                outline.push(pathOf([top[index], bottom[index]]));
+        }
+    }
+    let fill;
+    if (convex) {
+        fill = pathOf(convexHull([...top, ...bottom]), true);
+    }
+    else {
+        const parts = [pathOf(oriented(top), true), pathOf(oriented(bottom), true)];
+        for (let index = 0; index < count; index++) {
+            if (!facing[index])
+                continue;
+            const next = (index + 1) % count;
+            parts.push(pathOf(oriented([top[index], top[next], bottom[next], bottom[index]]), true));
+        }
+        fill = parts.join("");
+    }
+    const buckets = Array.from({ length: SHADES }, () => []);
+    if (height > 0) {
+        const [lx, ly] = [-sinA, cosA];
+        for (let index = 0; index < count; index++) {
+            if (!facing[index])
+                continue;
+            const [nx, ny] = normals[index];
+            const lit = (nx * lx + ny * ly + 1) / 2;
+            const shade = Math.min(SHADES - 1, Math.max(0, Math.floor(lit * SHADES)));
+            const next = (index + 1) % count;
+            buckets[shade].push(pathOf(oriented([top[index], top[next], bottom[next], bottom[index]]), true));
+        }
+    }
+    let bevel;
+    if (options.bevel && options.bevel > 0) {
+        const by = options.bevel;
+        const inset = ring.map(([x, y], index) => {
+            const [ax, ay] = normals[(index + count - 1) % count];
+            const [bx, by2] = normals[index];
+            const mx = ax + bx;
+            const my = ay + by2;
+            const length = Math.hypot(mx, my) || 1;
+            return [x - (mx / length) * by, y - (my / length) * by];
+        });
+        const insetTop = inset.map(([x, y]) => iso([x, y, z + height], projection));
+        bevel = runsOf(facing, true)
+            .map((run) => pathOf([top[run[0]], ...run.slice(1, -1).map((index) => insetTop[index]), top[run[run.length - 1]]]))
+            .join("");
+    }
+    return {
+        fill,
+        outline: outline.join(""),
+        crease: crease.join(""),
+        top: pathOf(oriented(top), true),
+        shades: buckets.map((paths) => paths.join("")),
+        bevel,
+    };
+}
+const ringOf = (plan, steps = 8) => roundedPlan(plan, steps);
+function slabOf(plan, z, height, projection, steps = 8, bevel = 0) {
+    return extrude(ringOf(plan, steps), z, height, projection, { convex: true, bevel });
+}
+function circleRing(cx, cy, radius, steps = 40) {
+    return Array.from({ length: steps }, (_, step) => {
+        const angle = (step / steps) * Math.PI * 2;
+        return [cx + radius * Math.cos(angle), cy + radius * Math.sin(angle)];
+    });
+}
+function cylinder(cx, cy, radius, z, height, projection, steps = 32, bevel = 0) {
+    return extrude(circleRing(cx, cy, radius, steps), z, height, projection, { convex: true, bevel });
+}
+const insetPlan = ({ x, y, w, d, r }, by) => ({ x: x + by, y: y + by, w: w - by * 2, d: d - by * 2, r: Math.max(0, r - by) });
+function onTop(points, z, projection, closed = false) {
+    return pathOf(points.map(([x, y]) => iso([x, y, z], projection)), closed);
+}
+const planOutline = (plan, z, projection, steps = 8) => onTop(ringOf(plan, steps), z, projection, true);
+const lineOnTop = (from, to, z, projection) => onTop([from, to], z, projection);
+const segment = (from, to, projection) => pathOf([iso(from, projection), iso(to, projection)]);
+const rise = (at, from, to, projection) => segment([at[0], at[1], from], [at[0], at[1], to], projection);
+const ring = (cx, cy, radius, z, projection, steps = 40) => onTop(circleRing(cx, cy, radius, steps), z, projection, true);
+const pointsAt = (points, projection) => points.map((point) => iso(point, projection));
+function dotGrid(x, y, columns, rows, gap, z, projection) {
+    const dots = [];
+    for (let row = 0; row < rows; row++) {
+        for (let column = 0; column < columns; column++)
+            dots.push(iso([x + column * gap, y + row * gap, z], projection));
+    }
+    return dots;
+}
+function corners({ x, y, w, d }, inset = 0) {
+    return [
+        [x + inset, y + inset],
+        [x + w - inset, y + inset],
+        [x + inset, y + d - inset],
+        [x + w - inset, y + d - inset],
+    ];
+}
+function boxCorners({ x, y, w, d }, z0, z1) {
+    const out = [];
+    for (const px of [x, x + w])
+        for (const py of [y, y + d])
+            for (const z of [z0, z1])
+                out.push([px, py, z]);
+    return out;
+}
+function knurl(cx, cy, radius, z0, z1, count, projection, inset = 0.4) {
+    const [vx, vy] = towardViewer(projection);
+    const lines = [];
+    for (let index = 0; index < count; index++) {
+        const angle = (index / count) * Math.PI * 2;
+        const nx = Math.cos(angle);
+        const ny = Math.sin(angle);
+        if (nx * vx + ny * vy < 0.15)
+            continue;
+        lines.push(segment([cx + radius * nx, cy + radius * ny, z0 + inset], [cx + radius * nx, cy + radius * ny, z1 - inset], projection));
+    }
+    return lines.join("");
+}
+function sideArc(cx, cy, radius, z, projection, steps = 24) {
+    const [vx, vy] = towardViewer(projection);
+    const facing = Math.atan2(vy, vx);
+    const points = [];
+    for (let step = 0; step <= steps; step++) {
+        const angle = facing - Math.PI / 2 + (step / steps) * Math.PI;
+        points.push(iso([cx + radius * Math.cos(angle), cy + radius * Math.sin(angle), z], projection));
+    }
+    return pathOf(points);
+}
+function ringSeam(ring, z, projection) {
+    const count = ring.length;
+    const counter = signedArea(ring) > 0;
+    const [vx, vy] = towardViewer(projection);
+    const facing = ring.map(([ax, ay], index) => {
+        const [bx, by] = ring[(index + 1) % count];
+        const dx = bx - ax;
+        const dy = by - ay;
+        const [nx, ny] = counter ? [dy, -dx] : [-dy, dx];
+        return nx * vx + ny * vy > 1e-9;
+    });
+    return runsOf(facing, true).map((run) => pathOf(run.map((index) => iso([ring[index][0], ring[index][1], z], projection)))).join("");
+}
+const sideSeam = (plan, z, projection, steps = 8) => ringSeam(ringOf(plan, steps), z, projection);
+function sideRing(center, radius, axis, projection, steps = 20) {
+    const [px, py, pz] = center;
+    const points = [];
+    for (let step = 0; step < steps; step++) {
+        const angle = (step / steps) * Math.PI * 2;
+        const u = radius * Math.cos(angle);
+        const v = radius * Math.sin(angle);
+        points.push(iso(axis === "x" ? [px, py + u, pz + v] : [px + u, py, pz + v], projection));
+    }
+    return pathOf(points, true);
+}
+function coil(from, to, center, radius, turns, axis, projection, perTurn = 16) {
+    const count = Math.max(1, Math.round(turns * perTurn));
+    const back = [];
+    const front = [];
+    let run = [];
+    let near = null;
+    for (let index = 0; index <= count; index++) {
+        const share = index / count;
+        const angle = share * turns * Math.PI * 2;
+        const u = radius * Math.cos(angle);
+        const v = radius * Math.sin(angle);
+        const along = from + (to - from) * share;
+        const point = axis === "x" ? [along, center[0] + u, center[1] + v] : [center[0] + u, along, center[1] + v];
+        const normal = axis === "x" ? [0, Math.cos(angle), Math.sin(angle)] : [Math.cos(angle), 0, Math.sin(angle)];
+        const facing = depthOf(normal, projection) > 0;
+        const flat = iso(point, projection);
+        if (near === null)
+            near = facing;
+        if (facing !== near) {
+            run.push(flat);
+            (near ? front : back).push(pathOf(run));
+            run = [flat];
+            near = facing;
+            continue;
+        }
+        run.push(flat);
+    }
+    if (run.length > 1)
+        (near ? front : back).push(pathOf(run));
+    return { back: back.join(""), front: front.join("") };
+}
+function topTicks(from, to, step, every, edge, z, lengths, projection, axis = "x") {
+    const minor = [];
+    const major = [];
+    const first = Math.ceil(from / step) * step;
+    for (let at = first, index = Math.round(first / step); at <= to + 1e-9; at += step, index++) {
+        const big = index % every === 0;
+        const length = big ? lengths[1] : lengths[0];
+        const a = axis === "x" ? [at, edge] : [edge, at];
+        const b = axis === "x" ? [at, edge + length] : [edge + length, at];
+        (big ? major : minor).push(lineOnTop(a, b, z, projection));
+    }
+    return { minor: minor.join(""), major: major.join("") };
+}
+function sideTicks(from, to, step, every, face, top, lengths, projection, axis = "x") {
+    const minor = [];
+    const major = [];
+    const first = Math.ceil(from / step) * step;
+    for (let at = first, index = Math.round(first / step); at <= to + 1e-9; at += step, index++) {
+        const big = index % every === 0;
+        const length = big ? lengths[1] : lengths[0];
+        const a = axis === "x" ? [at, face, top] : [face, at, top];
+        const b = axis === "x" ? [at, face, top - length] : [face, at, top - length];
+        (big ? major : minor).push(segment(a, b, projection));
+    }
+    return { minor: minor.join(""), major: major.join("") };
+}
+function radialTicks(cx, cy, radius, count, every, z, lengths, projection, from = 0, span = Math.PI * 2) {
+    const minor = [];
+    const major = [];
+    const closed = Math.abs(span - Math.PI * 2) < 1e-9;
+    const steps = closed ? count : count + 1;
+    for (let index = 0; index < steps; index++) {
+        const angle = from + (index / count) * span;
+        const big = index % every === 0;
+        const inner = radius - (big ? lengths[1] : lengths[0]);
+        const sx = Math.sin(angle);
+        const sy = -Math.cos(angle);
+        (big ? major : minor).push(lineOnTop([cx + sx * inner, cy + sy * inner], [cx + sx * radius, cy + sy * radius], z, projection));
+    }
+    return { minor: minor.join(""), major: major.join("") };
+}
+const haloOf = (plan, z, height, projection) => slabOf(plan, z, height, projection).fill;
+function axisVector(projection, [dx, dy, dz]) {
+    const origin = iso([0, 0, 0], projection);
+    const moved = iso([dx, dy, dz], projection);
+    return [moved[0] - origin[0], moved[1] - origin[1]];
+}
+const fine = (value) => Math.round(value * 100) / 100;
+function translateAlong(projection, by) {
+    const [x, y] = axisVector(projection, by);
+    return `translate(${fine(x)} ${fine(y)})`;
+}
+const thousandth = (value) => Math.round(value * 1000) / 1000;
+function axesAt(at, z, projection) {
+    const origin = iso([at[0], at[1], z], projection);
+    const along = (point) => {
+        const [px, py] = iso(point, projection);
+        return [px - origin[0], py - origin[1]];
+    };
+    return { origin, x: along([at[0] + 1, at[1], z]), y: along([at[0], at[1] + 1, z]), z: along([at[0], at[1], z + 1]) };
+}
+const matrixOf = (u, v, origin) => `matrix(${thousandth(u[0])} ${thousandth(u[1])} ${thousandth(v[0])} ${thousandth(v[1])} ${thousandth(origin[0])} ${thousandth(origin[1])})`;
+function holdStill(element, [dx, dy]) {
+    const text = dx || dy ? `translate(${-dx} ${-dy})` : "";
+    element.querySelectorAll("[data-hold]").forEach((node) => (text ? node.setAttribute("transform", text) : node.removeAttribute("transform")));
+}
+function topMatrix(at, z, projection, along = "x") {
+    const { origin, x, y } = axesAt(at, z, projection);
+    return along === "x" ? matrixOf(x, y, origin) : matrixOf([-y[0], -y[1]], x, origin);
+}
+function sideMatrix(at, z, projection, face) {
+    const { origin, x, y, z: up } = axesAt(at, z, projection);
+    const down = [-up[0], -up[1]];
+    return face === "left" ? matrixOf(x, down, origin) : matrixOf([-y[0], -y[1]], down, origin);
+}
+function screenRise(height, projection) {
+    const { cosE, k } = cameraOf(projection);
+    return height * cosE * k;
+}
+function fitProjection(points, width, height, { pad = 24, headroom = 0, azimuth = AZIMUTH, elevation = ELEVATION } = {}) {
+    const unit = { origin: [0, 0], scale: 1, azimuth, elevation };
+    const flat = points.map((point) => iso(point, unit));
+    const xs = flat.map(([x]) => x);
+    const ys = flat.map(([, y]) => y);
+    const left = Math.min(...xs);
+    const right = Math.max(...xs);
+    const up = Math.min(...ys);
+    const down = Math.max(...ys);
+    const scale = Math.min((width - pad * 2) / (right - left), (height - pad * 2 - headroom) / (down - up));
+    return {
+        origin: [width / 2 - ((left + right) / 2) * scale, headroom + (height - headroom) / 2 - ((up + down) / 2) * scale],
+        scale,
+        azimuth,
+        elevation,
+    };
+}
+const escape = (text) => text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+const attrs = (pairs) => Object.entries(pairs)
+    .filter(([, value]) => value !== undefined && value !== false)
+    .map(([key, value]) => ` ${key}="${escape(String(value))}"`)
+    .join("");
+function solidSvg(paths, { tone = "hi", crease = "faint", halo = false, lit = false, flat = false, className, inner = "" } = {}) {
+    const parts = [];
+    if (halo)
+        parts.push(`<path class="iso-halo" d="${paths.fill}"/>`);
+    parts.push(`<path class="iso-fill" d="${paths.fill}"/>`);
+    if (!flat) {
+        paths.shades.forEach((d, shade) => {
+            if (d)
+                parts.push(`<path class="iso-shade" data-shade="${shade}" d="${d}"/>`);
+        });
+        parts.push(`<path class="iso-top" d="${paths.top}"/>`);
+    }
+    if (crease !== "none" && paths.crease)
+        parts.push(`<path class="iso-line iso-crease" data-tone="${crease}" d="${paths.crease}"/>`);
+    if (crease !== "none" && paths.bevel)
+        parts.push(`<path class="iso-line iso-bevel" data-tone="${crease}" d="${paths.bevel}"/>`);
+    if (inner)
+        parts.push(inner);
+    parts.push(`<path class="iso-line iso-edge" data-tone="${tone}" d="${paths.outline}"/>`);
+    return `<g${attrs({ class: className ? `iso-solid ${className}` : "iso-solid", "data-lit": lit ? "" : undefined, "data-seamless": paths.seamless ? "" : undefined })}>${parts.join("")}</g>`;
+}
+function lineSvg(d, { tone = "lo", dotted = false, dashed = false, flow = false, className, free } = {}) {
+    if (!d)
+        return "";
+    return `<path${attrs({
+        class: className ? `iso-line ${className}` : "iso-line",
+        "data-tone": tone,
+        "data-free": free === true ? "" : free || undefined,
+        "data-dotted": dotted ? "" : undefined,
+        "data-dashed": dashed ? "" : undefined,
+        "data-flow": flow ? "" : undefined,
+        d,
+    })}/>`;
+}
+function dotsSvg(points, { size = 0.5, tone = "mid", pulse = false } = {}) {
+    const dots = points
+        .map(([x, y, alpha], index) => `<circle cx="${tenth(x)}" cy="${tenth(y)}" r="${size}"${alpha !== undefined && alpha < 1 ? ` fill-opacity="${Math.max(0, alpha).toFixed(2)}"` : ""}${pulse ? ` data-pulse="" style="--pulse-at:${(index * 137) % 1600}ms"` : ""}/>`)
+        .join("");
+    return `<g class="iso-dots" data-tone="${tone}">${dots}</g>`;
+}
+function fadedSvg(list, style = {}) {
+    const groups = new Map();
+    for (const entry of list) {
+        const [d, alpha] = Array.isArray(entry) ? entry : [entry.d, entry.alpha];
+        if (!d || !(alpha > 0.02))
+            continue;
+        const level = Math.min(1, Math.round(alpha * 20) / 20);
+        groups.set(level, (groups.get(level) ?? "") + d);
+    }
+    return [...groups].map(([alpha, d]) => (alpha >= 1 ? lineSvg(d, style) : `<g opacity="${alpha.toFixed(2)}">${lineSvg(d, style)}</g>`)).join("");
+}
+function fadeLineSvg(points, { fade = [0, 0], tone = "lo", className, stops = 6 } = {}) {
+    if (points.length < 2)
+        return "";
+    const ease = (t) => t * t * (3 - 2 * t);
+    const hashOf = (text) => {
+        let hash = 2166136261;
+        for (let index = 0; index < text.length; index++)
+            hash = Math.imul(hash ^ text.charCodeAt(index), 16777619);
+        return (hash >>> 0).toString(36);
+    };
+    const lengths = [0];
+    for (let index = 1; index < points.length; index++)
+        lengths.push(lengths[index - 1] + Math.hypot(points[index][0] - points[index - 1][0], points[index][1] - points[index - 1][1]));
+    const at = (length) => {
+        let index = 1;
+        while (index < points.length - 1 && lengths[index] < length)
+            index++;
+        const span = lengths[index] - lengths[index - 1] || 1;
+        const t = Math.max(0, Math.min(1, (length - lengths[index - 1]) / span));
+        return [points[index - 1][0] + (points[index][0] - points[index - 1][0]) * t, points[index - 1][1] + (points[index][1] - points[index - 1][1]) * t];
+    };
+    const pieceOf = (from, to) => [at(from), ...points.filter((_, index) => lengths[index] > from + 1e-6 && lengths[index] < to - 1e-6), at(to)];
+    const total = lengths[lengths.length - 1];
+    if (total < 1e-6)
+        return "";
+    let [start, end] = Array.isArray(fade) ? fade : [fade, fade];
+    if (start + end > total) {
+        const share = total / (start + end);
+        start *= share;
+        end *= share;
+    }
+    const paint = `var(--anatomy-${tone})`;
+    const ramp = (piece, rising) => {
+        const d = pathOf(piece);
+        const [x1, y1] = piece[0];
+        const [x2, y2] = piece[piece.length - 1];
+        const id = `iso-fade-${hashOf(`${d}|${tone}|${rising}`)}`;
+        const marks = Array.from({ length: stops + 1 }, (_, index) => {
+            const t = index / stops;
+            const alpha = ease(rising ? t : 1 - t);
+            return `<stop offset="${t.toFixed(3)}" stop-opacity="${alpha.toFixed(3)}" style="stop-color:${paint}"/>`;
+        }).join("");
+        const gradient = `<linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="${tenth(x1)}" y1="${tenth(y1)}" x2="${tenth(x2)}" y2="${tenth(y2)}">${marks}</linearGradient>`;
+        return `<defs>${gradient}</defs><path${attrs({ class: className ? `iso-line ${className}` : "iso-line", "data-tone": tone, "data-free": rising ? "start" : "end", d, style: `stroke:url(#${id})` })}/>`;
+    };
+    const parts = [];
+    if (start > 0.05)
+        parts.push(ramp(pieceOf(0, start), true));
+    if (total - end - start > 0.05)
+        parts.push(lineSvg(pathOf(pieceOf(start, total - end)), { tone, className }));
+    if (end > 0.05)
+        parts.push(ramp(pieceOf(total - end, total), false));
+    return `<g class="iso-fade">${parts.join("")}</g>`;
+}
+function wireSvg(from, to, { via = [], tone = "lo", dotted = false, dashed = false, flow = false, ends = "both", size = 1.2 } = {}) {
+    const d = pathOf([from, ...via, to]);
+    const end = ([x, y]) => `<circle class="iso-wire-end" cx="${tenth(x)}" cy="${tenth(y)}" r="${size}"/>`;
+    return `<g class="iso-wire" data-tone="${tone}">${lineSvg(d, { tone, dotted, dashed, flow })}${ends === "both" || ends === "from" ? end(from) : ""}${ends === "both" || ends === "to" ? end(to) : ""}</g>`;
+}
+function faceTextSvg(transform, text, { size = 3, tone = "mid", anchor = "start" } = {}) {
+    return `<text class="iso-face-text" data-tone="${tone}" transform="${transform}" font-size="${size}" text-anchor="${anchor}">${escape(text)}</text>`;
+}
+function groupSvg(children, extra = {}) {
+    return `<g${attrs(extra)}>${Array.isArray(children) ? children.join("") : children}</g>`;
+}
+function figureSvg({ width, height, label, body, standalone = false, className }) {
+    const style = standalone ? `<style>${ISO_CSS}</style>` : "";
+    return `<svg${attrs({
+        xmlns: "http://www.w3.org/2000/svg",
+        class: `iso-svg${standalone ? " iso" : ""}${className ? ` ${className}` : ""}`,
+        "data-theme": standalone || undefined,
+        viewBox: `0 0 ${width} ${height}`,
+        role: "img",
+        "aria-label": label,
+    })}>${style}${Array.isArray(body) ? body.join("") : body}</svg>`;
+}
+function swatchSvg(mark) {
+    if (mark === "raised" || mark === "flat" || mark === "lit") {
+        const body = mark === "flat" ? "M2 6.5 8 3.5 14 6.5 8 9.5Z" : "M2 4.5 8 1.5 14 4.5 14 6 8 9 2 6Z";
+        const crease = mark === "flat" ? "" : `<path class="iso-swatch-crease" d="M2 4.5 8 7.5 14 4.5"/>`;
+        return `<svg class="iso-swatch" data-mark="${mark}" viewBox="0 0 16 10" aria-hidden="true"><path d="${body}"/>${crease}</svg>`;
+    }
+    return `<svg class="iso-swatch" data-mark="${mark}" viewBox="0 0 16 10" aria-hidden="true"><path d="M1.5 5h13"/></svg>`;
+}
+function plateHtml({ fig, title, hint, readout = "", keys = [], caption, body }) {
+    const corner = (name, text, extra = "") => `<span class="iso-plate-corner" data-corner="${name}"${extra}>${escape(text)}</span>`;
+    const legend = keys.length || caption
+        ? `<figcaption class="iso-legend">${keys.length ? `<span class="iso-keys">${keys.map((key) => `<span class="iso-key">${swatchSvg(key.mark)}${escape(key.label)}</span>`).join("")}</span>` : ""}${caption ? `<span class="iso-caption">${escape(caption)}</span>` : ""}</figcaption>`
+        : "";
+    return `<figure class="iso-figure"><div class="iso-plate"><div class="iso-plate-corners" aria-hidden="true">${corner("fig", fig)}${title ? corner("title", title) : ""}${hint ? corner("hint", hint) : ""}${corner("readout", readout, " data-readout")}</div>${body}</div>${legend}</figure>`;
+}
+function pageHtml({ title, theme = "dark", body, script = "", width = 650 }) {
+    return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${escape(title)}</title><style>${ISO_CSS}${PAGE_CSS.replace("__WIDTH__", String(width))}</style></head><body class="iso" data-theme="${theme}"><main class="iso-page">${body}</main>${script ? `<script type="module">${script.replace(/<\/(script)/gi, "<\\/$1")}<\/script>` : ""}</body></html>`;
+}
+const PAGE_CSS = `
+*{box-sizing:border-box}
+html{color-scheme:dark}
+body[data-theme="light"]{color-scheme:light}
+body{margin:0;background:var(--anatomy-page);color:var(--anatomy-text);font:14px/1.6 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+.iso-page{width:min(__WIDTH__px,100% - 32px);margin:64px auto 96px}
+`;
+const ISO_CSS = `
+.iso{
+  --anatomy-page:#0b0b0b;--anatomy-card:#131313;--anatomy-text:#a3a3a3;--anatomy-strong:#e6e6e6;--anatomy-muted:#6e6e6e;
+  --anatomy-paper:#131313;--anatomy-face:#1b1b1b;--anatomy-top:#1c1c1c;
+  --anatomy-shade-0:#0f0f0f;--anatomy-shade-1:#121212;--anatomy-shade-2:#151515;--anatomy-shade-3:#181818;
+  --anatomy-lit-top:#262626;--anatomy-lit-shade:#1d1d1d;
+  --anatomy-hi:#d4d4d4;--anatomy-mid:#6a6a6a;--anatomy-lo:#3e3e3e;--anatomy-faint:#2a2a2a;--anatomy-lit:#ffffff;
+  --anatomy-halo:#050505;--anatomy-halo-opacity:.9;--anatomy-dot:#e6e6e6;
+  --anatomy-red:#ff6b6b;--anatomy-green:#6be0a0;--anatomy-blue:#6b9bff;
+  --anatomy-weight:.6px;--anatomy-ease:cubic-bezier(.32,.72,0,1);
+  --anatomy-mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --anatomy-lift:inset 0 1px 0 0 #ffffff0a,inset 0 0 0 1px #ffffff06,0 0 0 1px #00000026,0 1px 1px -.5px #00000014,0 3px 3px -1.5px #00000014,0 6px 6px -3px #00000014,0 12px 12px -6px #00000014;
+}
+.iso[data-theme="light"]{
+  --anatomy-page:#f2f2ef;--anatomy-card:#fbfbfa;--anatomy-text:#57575a;--anatomy-strong:#18181a;--anatomy-muted:#8c8c90;
+  --anatomy-paper:#fbfbfa;--anatomy-face:#ffffff;--anatomy-top:#ffffff;
+  --anatomy-shade-0:#dcdcd9;--anatomy-shade-1:#e5e5e2;--anatomy-shade-2:#ededea;--anatomy-shade-3:#f4f4f1;
+  --anatomy-lit-top:#ffffff;--anatomy-lit-shade:#eeeeeb;
+  --anatomy-hi:#26262a;--anatomy-mid:#8a8a8f;--anatomy-lo:#b4b4b8;--anatomy-faint:#d4d4d6;--anatomy-lit:#000000;
+  --anatomy-halo:#8a8a80;--anatomy-halo-opacity:.32;--anatomy-dot:#3a3a3e;
+  --anatomy-red:#e5484d;--anatomy-green:#30a46c;--anatomy-blue:#3e63dd;
+  --anatomy-lift:inset 0 1px 0 0 #ffffff,0 0 0 1px #0000000f,0 1px 1px -.5px #0000000a,0 3px 3px -1.5px #0000000a,0 6px 6px -3px #0000000a,0 12px 12px -6px #0000000a;
+}
+.iso-svg{display:block;width:100%;height:auto;overflow:visible}
+.iso-svg path,.iso-svg circle{vector-effect:non-scaling-stroke}
+.iso-fill{fill:var(--anatomy-paper);stroke:none}
+.iso-solid[data-lit]>.iso-fill{fill:var(--anatomy-face)}
+.iso-shade,.iso-top{stroke:none}
+.iso-shade[data-shade="0"]{fill:var(--anatomy-shade-0)}
+.iso-shade[data-shade="1"]{fill:var(--anatomy-shade-1)}
+.iso-shade[data-shade="2"]{fill:var(--anatomy-shade-2)}
+.iso-shade[data-shade="3"]{fill:var(--anatomy-shade-3)}
+.iso-top{fill:var(--anatomy-top)}
+.iso-solid[data-lit]>.iso-top{fill:var(--anatomy-lit-top)}
+.iso-solid[data-lit]>.iso-shade{fill:var(--anatomy-lit-shade)}
+.iso-solid[data-seamless]>.iso-shade,.iso-solid[data-seamless]>.iso-top{stroke-width:.4;stroke-linejoin:round}
+.iso-solid[data-seamless]>.iso-shade[data-shade="0"]{stroke:var(--anatomy-shade-0)}
+.iso-solid[data-seamless]>.iso-shade[data-shade="1"]{stroke:var(--anatomy-shade-1)}
+.iso-solid[data-seamless]>.iso-shade[data-shade="2"]{stroke:var(--anatomy-shade-2)}
+.iso-solid[data-seamless]>.iso-shade[data-shade="3"]{stroke:var(--anatomy-shade-3)}
+.iso-solid[data-seamless]>.iso-top{stroke:var(--anatomy-top)}
+.iso-solid[data-seamless][data-lit]>.iso-top{stroke:var(--anatomy-lit-top)}
+.iso-solid[data-seamless][data-lit]>.iso-shade{stroke:var(--anatomy-lit-shade)}
+.iso-solid[data-lit]>.iso-edge{stroke:var(--anatomy-lit)}
+.iso-halo{fill:var(--anatomy-halo);stroke:none;filter:blur(9px);opacity:var(--anatomy-halo-opacity);transform:translateY(3px)}
+.iso-line{fill:none;stroke:var(--anatomy-lo);stroke-width:var(--anatomy-weight);stroke-linecap:round;stroke-linejoin:round}
+.iso-line[data-tone="hi"]{stroke:var(--anatomy-hi)}
+.iso-line[data-tone="mid"]{stroke:var(--anatomy-mid)}
+.iso-line[data-tone="lo"]{stroke:var(--anatomy-lo)}
+.iso-line[data-tone="faint"]{stroke:var(--anatomy-faint)}
+.iso-line[data-tone="lit"]{stroke:var(--anatomy-lit)}
+.iso-line[data-tone="red"]{stroke:var(--anatomy-red)}
+.iso-line[data-tone="green"]{stroke:var(--anatomy-green)}
+.iso-line[data-tone="blue"]{stroke:var(--anatomy-blue)}
+.iso-line[data-dotted]{stroke-dasharray:.01 3.5;stroke-width:1}
+.iso-line[data-dashed]{stroke-dasharray:3 3}
+.iso-line[data-flow]{stroke-dasharray:2 6}
+.iso-wire-end{fill:var(--anatomy-paper);stroke:var(--anatomy-lo);stroke-width:var(--anatomy-weight)}
+.iso-wire[data-tone="hi"] .iso-wire-end{stroke:var(--anatomy-hi)}
+.iso-wire[data-tone="mid"] .iso-wire-end{stroke:var(--anatomy-mid)}
+.iso-wire[data-tone="faint"] .iso-wire-end{stroke:var(--anatomy-faint)}
+.iso-wire[data-tone="lit"] .iso-wire-end{stroke:var(--anatomy-lit)}
+.iso-dots circle{fill:var(--anatomy-dot);stroke:none;opacity:.32}
+.iso-dots[data-tone="hi"] circle{opacity:.85}
+.iso-dots[data-tone="mid"] circle{opacity:.45}
+.iso-dots[data-tone="lo"] circle{opacity:.22}
+.iso-dots[data-tone="faint"] circle{opacity:.12}
+.iso-face-text{fill:var(--anatomy-mid);font-family:var(--anatomy-mono);letter-spacing:.04em}
+.iso-face-text[data-tone="hi"]{fill:var(--anatomy-hi)}
+.iso-face-text[data-tone="lo"]{fill:var(--anatomy-lo)}
+.iso-face-text[data-tone="faint"]{fill:var(--anatomy-faint)}
+.tb-body{fill:var(--anatomy-shade-2);stroke:none}
+.tb-shine{fill:var(--anatomy-top);stroke:none}
+.tb-shade{fill:var(--anatomy-shade-0);stroke:none}
+.tb-ring{fill:none;stroke:var(--anatomy-lo);stroke-width:.45;stroke-linecap:butt;stroke-linejoin:round}
+.tb-ring[data-tone="mid"]{stroke:var(--anatomy-mid)}
+.tb-ring[data-tone="faint"]{stroke:var(--anatomy-faint)}
+.tb-ring[data-tone="hi"]{stroke:var(--anatomy-hi)}
+@keyframes iso-flow{to{stroke-dashoffset:-32}}
+@keyframes iso-pulse{0%,100%{opacity:.18}12%{opacity:1}40%{opacity:.18}}
+.iso-line[data-flow]{animation:iso-flow 1600ms linear infinite}
+.iso-dots circle[data-pulse]{animation:iso-pulse 1600ms steps(1,end) infinite;animation-delay:var(--pulse-at,0ms)}
+.iso-figure{margin:32px 0 36px}
+.iso-plate{position:relative;padding:52px 24px;border-radius:0;background:var(--anatomy-card);box-shadow:0 0 0 1px var(--anatomy-mid);--anatomy-paper:var(--anatomy-card)}
+.iso-plate-corners{position:absolute;inset:18px 20px;pointer-events:none}
+.iso-plate-corner{position:absolute;color:var(--anatomy-muted);font-family:var(--anatomy-mono);font-size:10.5px;line-height:1;letter-spacing:.04em;white-space:nowrap}
+.iso-plate-corner[data-corner="fig"]{top:0;left:0;color:var(--anatomy-text)}
+.iso-plate-corner[data-corner="title"]{top:0;right:0;text-transform:uppercase;letter-spacing:.1em}
+.iso-plate-corner[data-corner="hint"]{bottom:0;left:0;text-transform:uppercase;letter-spacing:.1em}
+.iso-plate-corner[data-corner="readout"]{right:0;bottom:0;color:var(--anatomy-text);font-variant-numeric:tabular-nums}
+.iso-plate .iso-svg{margin:0 auto}
+.iso-legend{display:grid;gap:8px;margin-top:12px;color:var(--anatomy-muted);font-size:13px;line-height:1.55}
+.iso-keys{display:flex;flex-wrap:wrap;gap:6px 18px}
+.iso-key{display:inline-flex;align-items:center;gap:7px}
+.iso-swatch{width:16px;height:10px;flex:none;overflow:visible}
+.iso-swatch path{fill:none;stroke:var(--anatomy-hi);stroke-width:1;vector-effect:non-scaling-stroke;stroke-linejoin:round;stroke-linecap:round}
+.iso-swatch[data-mark="raised"] path,.iso-swatch[data-mark="flat"] path{stroke:var(--anatomy-mid)}
+.iso-swatch[data-mark="lit"] path{stroke:var(--anatomy-lit)}
+.iso-swatch[data-mark="dim"] path{stroke:var(--anatomy-lo)}
+.iso-swatch[data-mark="dotted"] path{stroke-dasharray:.01 3;stroke-width:1.4}
+.iso-swatch[data-mark="dashed"] path{stroke-dasharray:3 2.5}
+.iso-swatch[data-mark="red"] path{stroke:var(--anatomy-red)}
+.iso-swatch[data-mark="green"] path{stroke:var(--anatomy-green)}
+.iso-swatch[data-mark="blue"] path{stroke:var(--anatomy-blue)}
+.iso-swatch-crease{stroke:var(--anatomy-lo)!important}
+@media (max-width:560px){.iso-plate{padding:48px 12px 70px}.iso-plate-corner[data-corner="hint"]{bottom:18px}}
+@media (prefers-reduced-motion:reduce){.iso-line[data-flow],.iso-dots circle[data-pulse]{animation:none}}
+`;
+
+const k = { AZIMUTH, ELEVATION, ISO_CSS, SHADES, axisVector, boxCorners, cameraOf, circleRing, coil, corners, cylinder, depthOf, dotGrid, dotsSvg, extrude, faceTextSvg, fadeLineSvg, fadedSvg, figureSvg, fitProjection, groupSvg, haloOf, holdStill, insetPlan, iso, joinPaths, knurl, lineOnTop, lineSvg, onTop, pageHtml, pathOf, planOutline, plateHtml, pointsAt, radialTicks, ring, ringOf, ringSeam, rise, roundedPlan, screenRise, segment, sideArc, sideMatrix, sideRing, sideSeam, sideTicks, slabOf, solidSvg, topMatrix, topTicks, towardViewer, translateAlong, wireSvg };
+// The model behind the figure. Pure functions: the geometry, the motion and the readout all read from here.
+// Real, from the code: four pipeline steps (prep, train, evaluate, register-check), an 80/20 stratified split,
+// a Random Forest of 100 trees with max depth 10, a managed online endpoint with one Standard_DS2_v2 instance,
+// score.py with init() once and run() per request. Illustrative: the needle position on the evaluation dial
+// (no real metric is shown) and the look of the data cards.
+
+const CYCLE = 30;
+const TREES = 100;
+const DEPTH = 10;
+const clamp = (v, lo = 0, hi = 1) => Math.min(hi, Math.max(lo, v));
+const seg = (u, a, b) => clamp((u - a) / (b - a));
+const ease = (t) => t * t * (3 - 2 * t);
+const wave = (u, a, b) => Math.sin(Math.PI * seg(u, a, b));
+
+const T = {
+  raw: [0.02, 0.12], // raw CSV card arrives at the splitter
+  split: [0.12, 0.2], // 80/20 split
+  trainMove: [0.2, 0.3], // train card to the trainer
+  press: [0.3, 0.38], // training stroke
+  model: [0.38, 0.5], // three files leave the trainer
+  evalMove: [0.5, 0.58], // test card and model reach the evaluator
+  needle: [0.58, 0.66],
+  verify: [0.66, 0.72], // register step checks the two files exist
+  handoff: [0.74, 0.8], // deploy: trained_model/ folder goes into the registry
+  load: [0.8, 0.86], // endpoint loads it once: init()
+  request: [0.86, 0.93], // a request card enters, run() answers
+  fade: [0.985, 1.0],
+};
+
+const X = { start: -194, split: -150, trainer: -82, evalr: -12, end: 48 };
+
+function pose(u) {
+  const fade = 1 - seg(u, T.fade[0], T.fade[1]);
+  const p = { u, fade };
+
+  // raw card -> splitter, then two cards
+  const rawX = X.start + (X.split - X.start) * ease(seg(u, ...T.raw));
+  const sp = ease(seg(u, ...T.split));
+  p.raw = { shown: u >= T.raw[0] && u < T.split[1], x: rawX, split: sp };
+  const trainX = X.split + (X.trainer - X.split) * ease(seg(u, ...T.trainMove));
+  p.train = { shown: u >= T.split[0] + 0.03, x: u < T.trainMove[0] ? X.split : trainX, done: u > T.press[1] };
+  // test card slides to its side tray, waits, then rides to the evaluator
+  const toTray = ease(seg(u, T.split[0] + 0.02, T.split[1]));
+  const toEval = ease(seg(u, ...T.evalMove));
+  p.test = { shown: u >= T.split[0] + 0.03, x: X.split + (X.evalr - X.split) * toEval, y: -44 + 29 * toTray * (1 - toEval) };
+  p.press = wave(u, ...T.press);
+  p.model = { shown: u >= T.model[0], x: X.trainer + 8 + (X.evalr + 4 - X.trainer - 8) * ease(seg(u, ...T.model)), out: ease(seg(u, T.model[0], T.model[0] + 0.04)) };
+  p.needle = 0.5 * ease(seg(u, ...T.needle)); // illustrative position, not a result
+  p.lampA = seg(u, T.verify[0], T.verify[0] + 0.03);
+  p.lampB = seg(u, T.verify[0] + 0.03, T.verify[1]);
+
+  // phase 2
+  p.folder = { shown: u >= T.handoff[0] - 0.04 && u < T.request[0] - 0.01, x: -120 + 38 * ease(seg(u, ...T.handoff)) + 144 * ease(seg(u, ...T.load)), sink: ease(seg(u, T.load[1] - 0.03, T.load[1])) };
+  p.load = ease(seg(u, ...T.load));
+  p.loaded = u >= T.load[1];
+  p.req = { shown: u >= T.request[0] && u < T.request[0] + 0.05, x: 200 - 36 * ease(seg(u, T.request[0], T.request[0] + 0.04)) };
+  p.resp = { shown: u >= T.request[0] + 0.05, y: 64 + 12 * ease(seg(u, T.request[0] + 0.05, T.request[1])), op: seg(u, T.request[0] + 0.05, T.request[0] + 0.065) };
+  return p;
+}
+
+function describe(u) {
+  if (u < T.raw[1]) return "raw CSV enters the pipeline";
+  if (u < T.trainMove[0]) return "step 1: clean, then split 80% train / 20% test";
+  if (u < T.model[0]) return `step 2: train a Random Forest (${TREES} trees, depth ${DEPTH})`;
+  if (u < T.verify[0]) return "step 3: score the model on the held-out 20%";
+  if (u < T.handoff[0]) return "step 4: check that model.pkl and scaler.pkl exist";
+  if (u < T.load[0]) return "deploy: register trained_model/ in the model registry";
+  if (u < T.request[0]) return "the endpoint starts and loads the model once: init()";
+  if (u < T.fade[0]) return "a JSON request arrives: run() returns predictions and probabilities";
+  return "ready for the next run";
+}
+
+// Geometry for the ML pipeline bench. Every function takes the projection P and returns SVG text.
+// The same file is used by build.mjs (first frame) and inlined into the page (live frames).
+
+
+const W = {
+  PLATE: { x: -214, y: -88, w: 428, d: 176, r: 9 },
+  PLATE_H: 12,
+  FOOT_H: 5,
+  Y1: -44, // phase 1 belt
+  Y2: 44, // phase 2 belt
+  B1: { x0: -204, x1: 66, w: 20 },
+  B2: { x0: -128, x1: 210, w: 20 },
+  CARD: { w: 24, d: 15 },
+  EVAL: [-12, -44],
+  GAUGE: { cx: -12, cy: -72, R: 16, z: 15, h: 7, label: "metrics" },
+  A0: -0.75 * Math.PI,
+  SPAN: 1.5 * Math.PI,
+  TRAY: { x: -166, y: -26, w: 30, d: 22, r: 2 },
+  VER: { x: 22, y: -84, w: 44, d: 18, r: 2 },
+  FOLDER: { x: -142, y: 30, w: 34, d: 28, r: 2 },
+  CAB: { x: -100, y: 26, w: 36, d: 40, r: 3 },
+  CAB_H: 24,
+  END: { x: 100, y: 22, w: 50, d: 44, r: 3 },
+  END_H: 26,
+  OUT: { x: 104, y: 66, w: 42, d: 18, r: 2 },
+};
+
+const S = (paths, style) => k.solidSvg(paths, style);
+const L = (d, style) => k.lineSvg(d, style);
+const D = (points, style) => k.dotsSvg(points, style);
+const at = (P, p) => k.iso(p, P);
+const opaque = (svg, op) => (op >= 0.999 ? svg : `<g opacity="${Math.max(0, op).toFixed(3)}">${svg}</g>`);
+
+function plate(P) {
+  const { PLATE, PLATE_H, FOOT_H } = W;
+  const out = [`<path class="iso-halo" d="${k.haloOf(PLATE, -PLATE_H - FOOT_H, PLATE_H, P)}"/>`];
+  const feet = [...k.corners(PLATE, 22), [0, PLATE.y + 22], [0, PLATE.y + PLATE.d - 22]];
+  for (const [x, y] of [...feet].sort((a, b) => k.depthOf([a[0], a[1], 0], P) - k.depthOf([b[0], b[1], 0], P))) {
+    out.push(S(k.cylinder(x, y, 7, -PLATE_H - FOOT_H, 1.6, P, 28), { tone: "lo" }));
+    out.push(S(k.cylinder(x, y, 5.4, -PLATE_H - FOOT_H + 1.6, FOOT_H - 1.6, P, 28), { tone: "mid" }));
+  }
+  out.push(S(k.slabOf(PLATE, -PLATE_H, PLATE_H, P, 8, 1.6), { tone: "mid" }));
+  out.push(L(k.planOutline(k.insetPlan(PLATE, 5), 0, P), { tone: "lo" }));
+  const corner = k.corners(PLATE, 10);
+  out.push(L(corner.map(([x, y]) => k.ring(x, y, 2.2, 0, P, 16)).join(""), { tone: "lo" }));
+  out.push(D(corner.map(([x, y]) => at(P, [x, y, 0])), { size: 0.5 }));
+  return out.join("");
+}
+
+function belt(P, y, b) {
+  const out = [];
+  const plan = { x: b.x0, y: y - b.w / 2, w: b.x1 - b.x0, d: b.w, r: 2 };
+  out.push(S(k.slabOf(plan, 0, 1.6, P, 4, 0.4), { tone: "mid" }));
+  out.push(L(k.lineOnTop([b.x0, y - 6.5], [b.x1, y - 6.5], 1.6, P), { tone: "faint" }));
+  out.push(L(k.lineOnTop([b.x0, y + 6.5], [b.x1, y + 6.5], 1.6, P), { tone: "faint" }));
+  out.push(L(k.topTicks(b.x0 + 4, b.x1 - 4, 6, 4, y - 9.2, 1.6, [1.2, 2.2], P).minor, { tone: "lo" }));
+  out.push(D([at(P, [b.x0 + 2.6, y, 1.6]), at(P, [b.x1 - 2.6, y, 1.6])], { size: 0.45 }));
+  return out.join("");
+}
+const belts = (P) => belt(P, W.Y1, W.B1) + belt(P, W.Y2, W.B2);
+
+function pad(P, plan, h = 0.8) {
+  const out = [S(k.slabOf(plan, 0, h, P, 4, 0.3), { tone: "lo", crease: "none" })];
+  out.push(L(k.planOutline(k.insetPlan(plan, 2), h, P, 4), { tone: "faint" }));
+  return out.join("");
+}
+const tray = (P) => pad(P, W.TRAY);
+const folderPad = (P) => pad(P, W.FOLDER);
+const evalPad = (P) => pad(P, { x: W.EVAL[0] - 20, y: W.EVAL[1] - 14, w: 40, d: 28, r: 2 }, 1.2);
+
+// a gantry arch over a belt; with a head if `head` is set
+function arch(P, x, y, label) {
+  const out = [];
+  for (const sy of [-17, 17]) out.push(S(k.slabOf({ x: x - 6, y: y + sy - 3, w: 12, d: 6, r: 1.2 }, 0, 24, P, 3, 0.5), { tone: "mid" }));
+  out.push(S(k.slabOf({ x: x - 7, y: y - 20, w: 14, d: 40, r: 1.8 }, 24, 7, P, 4, 0.5), { tone: "mid" }));
+  out.push(L(k.planOutline(k.insetPlan({ x: x - 7, y: y - 20, w: 14, d: 40, r: 1.8 }, 2), 31, P, 4), { tone: "faint" }));
+  if (label) out.push(k.faceTextSvg(k.topMatrix([x - 2.6, y + 15], 31, P, "y"), label, { size: 3, tone: "mid" }));
+  return out.join("");
+}
+const archBack = (P, x, y) => S(k.slabOf({ x: x - 6, y: y - 20, w: 12, d: 6, r: 1.2 }, 0, 24, P, 3, 0.5), { tone: "mid" });
+const archFront = (P, x, y, label) => {
+  const out = [S(k.slabOf({ x: x - 6, y: y + 14, w: 12, d: 6, r: 1.2 }, 0, 24, P, 3, 0.5), { tone: "mid" })];
+  return out.join("");
+};
+function archTop(P, x, y, label) {
+  const plan = { x: x - 7, y: y - 20, w: 14, d: 40, r: 1.8 };
+  const out = [S(k.slabOf(plan, 24, 7, P, 4, 0.5), { tone: "mid" })];
+  out.push(L(k.planOutline(k.insetPlan(plan, 2), 31, P, 4), { tone: "faint" }));
+  if (label) out.push(k.faceTextSvg(k.topMatrix([x + 1.6, y + 14], 31, P, "y"), label, { size: 3, tone: "mid" }));
+  return out.join("");
+}
+
+function head(P, x, y) {
+  const out = [];
+  out.push(S(k.cylinder(x, y, 2.2, 12, 12, P, 20), { tone: "mid", crease: "none" }));
+  out.push(S(k.cylinder(x, y, 6.5, 6, 6, P, 28, 0.5), { tone: "hi", lit: true }));
+  out.push(L(k.knurl(x, y, 6.5, 6, 12, 20, P), { tone: "lo" }));
+  return out.join("");
+}
+
+// slips: raw (wide, full), train (80%), test (20%), model files (three narrow slabs)
+function slip(P, x, y, w, bars, op = 1, lit = true, z = 1.6) {
+  if (op <= 0.003) return "";
+  const d = W.CARD.d;
+  const plan = { x: x - w / 2, y: y - d / 2, w, d, r: 1.2 };
+  const out = [S(k.slabOf(plan, z, 1.2, P, 4, 0.3), { tone: "hi", lit, crease: "lo" })];
+  bars.forEach((f, i) => out.push(L(k.lineOnTop([x - w / 2 + 2.4, y - d / 2 + 3.6 + i * 3.8], [x - w / 2 + 2.4 + (w - 5) * f, y - d / 2 + 3.6 + i * 3.8], z + 1.2, P), { tone: "lo", free: true })));
+  return opaque(out.join(""), op);
+}
+function files(P, x, y, out1 = 1, op = 1) {
+  const out = [];
+  [-7, 0, 7].forEach((dy, i) => {
+    const plan = { x: x - 8, y: y + dy * out1 - 2.8, w: 16, d: 5.6, r: 1 };
+    out.push(S(k.slabOf(plan, 1.6, 2, P, 3, 0.3), { tone: "hi", lit: true, crease: "lo" }));
+  });
+  return opaque(out.join(""), op);
+}
+
+function gauge(P) {
+  const g = W.GAUGE;
+  const { cx: x, cy: y, R, z: Z, h: H } = g;
+  const { A0, SPAN } = W;
+  const top = Z + H;
+  const out = [];
+  const foot = { x: x - 13, y: y - 13, w: 26, d: 26, r: 3 };
+  out.push(S(k.slabOf(foot, 0, 4, P, 5, 0.6), { tone: "mid" }));
+  out.push(D(k.corners(foot, 3).map(([a, b]) => at(P, [a, b, 4])), { size: 0.4 }));
+  out.push(S(k.cylinder(x, y, 3.6, 4, Z - 4, P, 24), { tone: "mid", crease: "none" }));
+  out.push(S(k.cylinder(x, y, R, Z, H, P, 48, 0.7), { tone: "hi", crease: "lo" }));
+  out.push(L(k.knurl(x, y, R, top - 3, top, 60, P, 0.3), { tone: "lo" }));
+  out.push(L(k.ring(x, y, R - 2, top, P, 48), { tone: "lo" }));
+  const ticks = k.radialTicks(x, y, R - 2.6, 40, 5, top, [1.2, 2.5], P, A0, SPAN);
+  out.push(L(ticks.minor, { tone: "lo" }), L(ticks.major, { tone: "mid" }));
+  out.push(L(k.ring(x, y, 1.5, top, P, 16), { tone: "mid" }));
+  out.push(k.faceTextSvg(k.topMatrix([x, y + 8.4], top, P, "x"), g.label, { size: 2.6, tone: "mid", anchor: "middle" }));
+  return out.join("");
+}
+function needleD(P, v) {
+  const { cx: x, cy: y, R, z: Z, h: H } = W.GAUGE;
+  const a = W.A0 + W.SPAN * v;
+  return k.lineOnTop([x - Math.sin(a) * 3, y + Math.cos(a) * 3], [x + Math.sin(a) * (R - 4), y - Math.cos(a) * (R - 4)], Z + H + 0.2, P);
+}
+
+// the register step's two checks
+function verifier(P, a, b) {
+  const { VER } = W;
+  const out = [S(k.slabOf(VER, 0, 8, P, 4, 0.6), { tone: "mid" })];
+  out.push(L(k.planOutline(k.insetPlan(VER, 2.2), 8, P, 4), { tone: "faint" }));
+  [[VER.x + 12, a], [VER.x + 32, b]].forEach(([x, on]) => {
+    const y = VER.y + VER.d / 2;
+    out.push(S(k.cylinder(x, y, 3.6, 8, 2.4 + 3 * on, P, 20), { tone: on > 0.5 ? "hi" : "mid", lit: on > 0.5 }));
+    out.push(L(k.ring(x, y, 5.4, 8, P, 20), { tone: "faint" }));
+  });
+  out.push(D(k.corners(VER, 2.4).map(([x, y]) => at(P, [x, y, 8])), { size: 0.4 }));
+  return out.join("");
+}
+
+function cabinet(P) {
+  const { CAB, CAB_H } = W;
+  const out = [`<path class="iso-halo" d="${k.haloOf(CAB, 0, CAB_H, P)}" style="filter:blur(4px)"/>`];
+  const h = CAB_H / 3;
+  for (let i = 0; i < 3; i++) {
+    out.push(S(k.slabOf(CAB, h * i, h, P, 5, 0.6), { tone: "mid" }));
+    out.push(D([at(P, [CAB.x + CAB.w / 2, CAB.y + CAB.d, h * i + h / 2])], { size: 0.8, tone: "hi" }));
+  }
+  out.push(L(k.planOutline(k.insetPlan(CAB, 2.4), CAB_H, P, 4), { tone: "faint" }));
+  out.push(k.faceTextSvg(k.topMatrix([CAB.x + 3.4, CAB.y + CAB.d - 4], CAB_H, P, "x"), "registry", { size: 3.6, tone: "mid" }));
+  out.push(D(k.corners(CAB, 2.6).map(([x, y]) => at(P, [x, y, CAB_H])), { size: 0.4 }));
+  return out.join("");
+}
+
+function endpoint(P, loaded) {
+  const { END, END_H } = W;
+  const out = [`<path class="iso-halo" d="${k.haloOf(END, 0, END_H, P)}" style="filter:blur(4px)"/>`];
+  out.push(S(k.slabOf(END, 0, END_H, P, 5, 0.7), { tone: "mid" }));
+  out.push(L(k.planOutline(k.insetPlan(END, 3), END_H, P, 4), { tone: "faint" }));
+  out.push(k.faceTextSvg(k.topMatrix([END.x + 5, END.y + 12], END_H, P, "x"), "score.py", { size: 4.4, tone: "mid" }));
+  const lx = END.x + END.w - 9, ly = END.y + END.d - 9;
+  out.push(S(k.cylinder(lx, ly, 3.6, END_H, 2.6, P, 20), { tone: loaded ? "hi" : "mid", lit: !!loaded }));
+  out.push(L(k.ring(lx, ly, 5.6, END_H, P, 20), { tone: "faint" }));
+  out.push(D(k.corners(END, 3).map(([x, y]) => at(P, [x, y, END_H])), { size: 0.4 }));
+  return out.join("");
+}
+const outTray = (P) => pad(P, W.OUT);
+
+
+const P = {"origin":[430,186.89289324088196],"scale":1.407658438352425,"azimuth":62,"elevation":30};
+const REST = 0.975;
+const XS = {"split":-150,"trainer":-82};
+const stage = document.querySelector(".iso-stage");
+const svg = stage.querySelector("svg");
+const part = (name) => svg.querySelector('[data-part="' + name + '"]');
+const E = Object.fromEntries(["verifier", "raw", "train", "test", "model", "head", "needle", "folder", "endpoint", "request", "response"].map((n) => [n, part(n)]));
+const readout = document.querySelector("[data-readout]");
+const still = matchMedia("(prefers-reduced-motion: reduce)");
+const cache = {};
+const put = (key, node, html) => { if (cache[key] !== html) { cache[key] = html; node.innerHTML = html; } };
+const q4 = (v) => Math.round(v * 4) / 4;
+const q20 = (v) => Math.round(v * 20) / 20;
+let u = still.matches ? REST : 0, target = u, touring = !still.matches, frame = 0, last = 0, visible = false, idleTimer = 0;
+
+function render() {
+  const p = pose(u);
+  const f = q20(p.fade);
+  put("verifier", E.verifier, verifier(P, q20(p.lampA), q20(p.lampB)));
+  put("raw", E.raw, p.raw.shown ? slip(P, q4(p.raw.x), W.Y1, 24, [0.9, 0.7, 0.8, 0.6], f * (1 - q20(p.raw.split))) : "");
+  put("train", E.train, p.train.shown ? slip(P, q4(p.train.x), W.Y1, 19.2, [0.9, 0.7, 0.8], f * (p.train.done ? 0 : 1) * q20(p.raw.split)) : "");
+  put("test", E.test, p.test.shown ? slip(P, q4(p.test.x), q4(p.test.y), 11.6, [0.9, 0.6], f * q20(p.raw.split)) : "");
+  put("model", E.model, p.model.shown ? files(P, q4(p.model.x), W.Y1, q20(p.model.out), f) : "");
+  E.head.setAttribute("transform", translateAlong(P, [0, 0, -4 * p.press]));
+  E.needle.setAttribute("d", needleD(P, p.needle));
+  put("folder", E.folder, p.folder.shown ? files(P, q4(p.folder.x), W.Y2, 1, f * (1 - q20(p.folder.sink))) : "");
+  put("endpoint", E.endpoint, endpoint(P, p.loaded));
+  put("request", E.request, p.req.shown ? slip(P, q4(p.req.x), W.Y2, 24, [0.5, 0.5, 0.5], f) : "");
+  put("response", E.response, p.resp.shown ? slip(P, 125, q4(p.resp.y), 24, [0.9, 0.4], q20(p.resp.op) * f, true, 0.8) : "");
+  const text = describe(u);
+  if (readout.textContent !== text) readout.textContent = text;
+  stage.setAttribute("aria-valuenow", String(Math.round(u * 100)));
+  stage.setAttribute("aria-valuetext", text);
+}
+
+function tick(now) {
+  const dt = last ? Math.min((now - last) / 1000, 1 / 30) : 1 / 60;
+  last = now;
+  if (touring) { u += dt / CYCLE; if (u >= 1) u -= 1; target = u; }
+  else { u = still.matches ? target : u + (target - u) * (1 - Math.exp(-dt / 0.12)); if (Math.abs(target - u) < 0.0004) u = target; }
+  render();
+  frame = visible && (touring || u !== target) ? requestAnimationFrame(tick) : 0;
+}
+const run = () => { if (!frame && visible) { last = 0; frame = requestAnimationFrame(tick); } };
+const hold = () => { touring = false; clearTimeout(idleTimer); idleTimer = setTimeout(() => { touring = !still.matches; run(); }, 3600); run(); };
+new IntersectionObserver((entries) => { visible = entries[entries.length - 1].isIntersecting; if (visible) run(); }, { rootMargin: "120px 0px" }).observe(stage);
+stage.addEventListener("pointermove", (event) => { const box = svg.getBoundingClientRect(); target = clamp(((event.clientX - box.left) / box.width - 0.06) / 0.88, 0, 0.995); hold(); });
+stage.addEventListener("pointerleave", () => { clearTimeout(idleTimer); idleTimer = setTimeout(() => { touring = !still.matches; run(); }, 1200); });
+stage.addEventListener("click", () => { u = target = 0; touring = !still.matches; if (still.matches) u = target = REST; clearTimeout(idleTimer); render(); run(); });
+stage.addEventListener("keydown", (event) => {
+  const key = event.key;
+  if (key === "ArrowRight" || key === "ArrowUp") target = clamp(target + 0.03, 0, 0.995);
+  else if (key === "ArrowLeft" || key === "ArrowDown") target = clamp(target - 0.03, 0, 0.995);
+  else if (key === "Home") target = 0;
+  else if (key === "End") target = REST;
+  else if (key === " " || key === "Enter") { event.preventDefault(); u = target = 0; touring = !still.matches; render(); run(); return; }
+  else return;
+  event.preventDefault();
+  hold();
+});
+window.__set = (uu) => { u = target = uu; touring = false; render(); };
+render();
+</script></body></html>
