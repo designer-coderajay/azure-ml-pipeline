@@ -35,7 +35,7 @@ Read this first. It is the honest scope of the repository.
 | "Zero-downtime deployment" | The deployment is one instance named `default` that takes 100% of traffic. This repository does not set up blue/green traffic splitting. |
 | "Clinical model" | **No.** It is a demonstration of pipeline mechanics. Do not use it for any medical decision. |
 
-Also worth knowing: the training step logs accuracy and F1 on the **training** data, which says little about generalisation. The honest numbers are the `test_*` metrics from the evaluation step. The committed `artifacts/` folder is the downloaded log of one earlier run that failed inside the training step (an older version of the script called `mlflow.sklearn.log_model`, which the current script does not). There are no automated tests in this repository, and I did not run it against live Azure resources while writing this README; it was checked against the source code only.
+Also worth knowing: the training step logs accuracy and F1 on the **training** data, which says little about generalisation. The honest numbers are the `test_*` metrics from the evaluation step. The committed `artifacts/` folder is the downloaded log of one earlier run that failed inside the training step (an older version of the script called `mlflow.sklearn.log_model`, which the current script does not). There are no automated tests in this repository, and this README was checked against the source code, not by running the pipeline against live Azure resources.
 
 ## The three ideas, illustrated
 
